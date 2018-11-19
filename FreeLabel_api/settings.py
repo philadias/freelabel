@@ -26,7 +26,7 @@ DEBUG = True
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 SESSION_ENGINE= 'django.contrib.sessions.backends.cached_db'
-ALLOWED_HOSTS = ['192.168.0.104','134.48.92.131','134.48.90.48', '134.48.90.100','127.0.0.1','10.162.12.67','localhost','134.48.93.227','134.48.92.238','134.48.92.116','134.48.90.142']
+ALLOWED_HOSTS = ['localhost']
 
 # When set to True, Django will save the session to the database on every single request
 # (https://docs.djangoproject.com/en/2.0/topics/http/sessions/)
