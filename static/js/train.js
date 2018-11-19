@@ -431,7 +431,10 @@
   }
 
  function writeFile(){
-      
+      // flag indicating this call is coming from training page, 
+      // so there's no ranking to be updated
+      var trainingFlag = true;
+
       //include maxtime, time bonus, score per class, total score
       $.ajax({
           url: '/freelabel/writeLog/',
@@ -447,7 +450,8 @@
                  "scores": scores,
                  "timeBonus": timeBonus.toFixed(2),
                  "finalScore": img_score,
-                 "fileID": fileID},
+                 "fileID": fileID,
+                 "trainingFlag": trainingFlag},
           tryCount : 0,
           retryLimit : 3,
           success: function(resp){    
