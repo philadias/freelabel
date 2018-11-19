@@ -1,0 +1,31 @@
+<!DOCTYPE html> 
+<html> 
+<body> 
+ 
+<button type="button" onclick="goBack(); ">Back</button>  
+
+<br/>
+<br/>
+
+<video id="myVideo" controls autoplay>
+  <source id="mp4_src" src="/static/tutorial/video1.mp4" type="video/mp4">
+  <!-- <source id="ogg_src" src="mov_bbb.ogg" type="video/ogg"> -->
+  Your browser does not support HTML5 video.
+</video>
+
+<script> 
+window.onload = function() {  
+	alert("ue")
+    document.getElementById("mp4_src").src = "/static/tutorial/video1.mp4";
+    // document.getElementById("ogg_src").src = "movie.ogg";
+    document.getElementById("myVideo").load();
+} 
+
+function goBack () {
+	window.history.back();
+}
+
+</script> 
+
+</body> 
+</html>

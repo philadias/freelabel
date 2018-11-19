@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+  <title>FreeLabel - Training</title>
+  <style type="text/css">
+    #container { position: relative; }
+    #imageView { border: 1px solid #000;}
+    #imageTemp { position: absolute; top: 1px; left: 1px;}
+    #accId { display: inline-block; vertical-align: top;}
+
+    .noselect {
+      -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+         -khtml-user-select: none; /* Konqueror HTML */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+                user-select: none; /* Non-prefixed version, currently
+                                      supported by Chrome and Opera */
+    }
+
+    .myprogressBar {
+      width: 200px;
+      height: 20px;/**/
+      background-color: #ddd;
+      /*display: inline-block; */
+      /*position: relative; vertical-align:top;*/
+    }
+
+    .mybar {
+      width: 1%;
+      height: 20px;
+      background-image: url('/static/images/colorbar.svg');
+      background-size: 200px 20px;
+      text-align: right;
+    }
+
+    .timeProgressBar {
+      width: 600px;
+      background-color: #ddd;
+    }
+
+    .timeBar {
+      width: 1%;
+      height: 30px;
+      background-color: #4CAF50;
+      text-align: right;
+      color: white;
+    }
+
+
+    .overlay {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      left: 0;
+      background-color: rgb(0,0,0);
+      /*background-color: rgba(0,0,0, 0.9);*/
+      overflow-x: hidden;
+      transition: 0.5s;
+    }
+
+    .timer {
+     font-size: 2.5em;
+     padding: 10px;
+     text-align: center;
+     margin: 0 auto;
+     background: #ccc;
+     }  
+
+  </style>
+  </head>
+
+
+  <body>
+  {% if user.is_authenticated %}
+  <a href="/freelabel/register/">Guide page</a>
+  <a href="/freelabel/logout/">Logout</a>
+  {% else %}
+  <p> Please go back to register; otherwise, your traces will not be recorded. </p> <!--In case some smart guys modify link and go to play page directly -->
+  <a href="/freelabel/register/">Go back to Register </a><br />
+  <a href="/freelabel/login/">Login</a><br />
+  {% endif %}
+
+
+  <br/>
+  <div id="scoreContainer" class="noselect" style="display: inline-block; position: relative; vertical-align:top;">
+    <a id="imgId"></a>
+    <span id="scoreId"> Score: </span>
+  </div>
+  <div id="progressTime" class="timeProgressBar">
+    <div id="barTime" class="timeBar"> 0s  </div>
+    <div id="txtBonus" style="float: right;"> 2x  </div>
+  </div>
+
+  <button type="button" id="btnPause" onclick="pause(); ">Pause (timer)</button>  
+  <button type="button" id="btnFinish" onclick="finish();">Finish</button>
+  <i id="checkIcon" class="fa fa-times" style="font-size:20px;color:red"></i>
+
+  <button type="button" id="btnNxtImg" onclick="nextImage();" style="visibility: hidden">Next Image</button>
+
+
+  <div id="myNav" class="overlay">
+    <!-- <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a> -->
+    <button type="button" id="btnDraw" onclick="closeNav(); ">Annotate this example</button>
+    <video id="myVideo" controls autoplay>
+    <source id="myVideo" type="video/mp4">
+    <!-- <source id="ogg_src" src="mov_bbb.ogg" type="video/ogg"> -->
+    Your browser does not support HTML5 video.
+    </video>
+  </div>
+
+
+  <!-- tools for drawing -->
+  <p></p>
+  <div id="commandsDiv" class="noselect">
+    <button type="button" id="btnUndo" onclick="undoTrace();" style="visibility: hidden">Undo</button>
+    <button type="button" id="btnReload" onclick="reloadImage();">Reload (clear)</button>
+
+    <label>Tool: <select id="dtool">
+    <option value="pencil">Pencil</option>
+    <option value="line">Line</option>
+    <option value="eraser">Eraser</option>
+
+    </select></label>
+
+    <!-- option list for all objects in image -->
+    <label id ="objects">Category: <select id="dcolor">
+      <!-- onchange="document.getElementById('dtool').value = 'pencil'; tool = new tools['pencil']();" -->
+
+    <option id="opt1" value=1 onclick="document.getElementById('objects').style.color = 'black'">background</option>
+
+    </select></label>
+
+    <label>Size: <select id="dsize">
+    <option value=1>Small</option>
+    <option value=2>Normal</option>
+    <option value=4>Large</option>
+    <option selected value=8>Huge</option>
+
+    </select></label>
+    <!-- Trace weight: <input type="number" id="weightId" value="5" min="1" max="10" style="width: 30px"> -->
+    <!-- Color emph.: <input type="number" id="mId" value="5" min="1" max="10" style="width: 30px"> -->
+    <button type="button" id="btnRefine" onclick="retry_ = 0; callRefine();" style="margin-right:20px"> Grow Traces</button>
+
+  </div>
+
+  <div id="container" class="noselect">
+        <canvas id="imageView" >
+        <p>Unfortunately, your browser is currently unsupported by our web application.  </p></canvas>
+        <span id="accId"> Accuracies: </span>
+        <div id="barContainer" style="display: inline-block; position: relative; vertical-align:top;">
+            <div id="progressBar0" class="myprogressBar">
+              <div id="bar0" class="mybar"></div>
+            </div>
+        </div>
+<!--         <div id="ScoreContainer" style="display: inline-block; position: relative; vertical-align:top;">
+        </div> -->
+  </div>
+
+  <div id="sliders" class="noselect">
+    <label for="opacity-slider">Opacities - Image: </label>
+      <input type="range" min="0" max="1" value="1" id="dtran" step="0.01" onchange="changeImgTran()" style="position: relative; top:10px; width: 100px">
+    <label for="opacity-slider">Masks: </label>
+      <input type="range" min="0" max="1" value="1" id="dtranM" step="0.01" onchange="changeImgTran()" style="position: relative; top:10px; width: 100px">
+    <p></p>
+    <button type="button" onclick="maskOnTraces();">Mask on/off</button>
+
+    <button type="button" onclick="boundingBoxOn();">Bounding box on/off</button>
+
+    <button type="button" onclick="TraceOnTempCanvas();">Trace on/off</button>
+
+    <button type="button" id="btnGTusr" onclick="toggleGTuser();" style="visibility: hidden;">Perfect/Yours</button>
+  </div>
+
+ <!--   Div and CSS for positions of background image and final mask,
+          mask will be on the top of initial image.  -->
+  <div id="viewOutputs" style="float: left; position: relative; top: 0; left: 0; " class="noselect">
+        <h3> Score Rules Chart </h3>
+        <img id="scoreRules" src="/static/images/scoreRules.png" style="height: 300px">
+        <img id="initial" style="position: absolute; top: 0; left: 0; visibility: hidden;">
+        <!-- hide maskImg if there is no result yet -->
+        <img id="maskImg" style ="position: absolute; top: 0; left: 0; visibility: hidden" onerror="maskOn=false;">
+  </div>
+
+  <div id="hotkeys" style="float: left; position: relative; top: 0; left: 0; " class="noselect">
+      <h3>Keyboard shortcuts:</h3>
+      <p>Tools: P - Pencil; L - Line; E - Eraser; G/R - Grow Traces(Refine)</p>
+      <p>Toggles (On/off): M - Mask; B - boxes ; T - traces</p>
+      <p>Trace size: &uarr; and &darr;</p>
+  </div>
+
+  <!-- loading icon to indicate that refinement is running -->
+  <div id="loadingIcon" style="text-align: center;background-color: white;opacity:1;display:none;width:130px;height:150px;border:1px solid black;position:absolute;top:30%;left:30%;padding:2px;"><img src='/static/images/loader.gif' width="120" height="120" /><br>Refining..</div>
+
+  <script type="text/javascript" src="/static/js/initGlobals.js"></script>
+  <script type="text/javascript" src="/static/js/scores.js"></script>
+  <script type="text/javascript" src="/static/js/video.js"></script>
+  <script type="text/javascript" src="/static/js/base.js"></script>
+  <script type="text/javascript" src="/static/js/train.js"></script>  
+
+  </body>
+</html>
