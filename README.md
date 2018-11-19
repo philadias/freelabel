@@ -15,9 +15,10 @@ WACV proceedings: to be included
 4. enter virtual environment: source ./bin/activate
 5. install requirements: pip install -r requirements.txt (if it fails, try upgrading pip: pip install --upgrade pip)
 6. Recompile callRGR: 
-- cd freelabel
-- python setup.py build_ext --inplace
-- cd ..
+	- cd freelabel
+	- python setup.py build_ext --inplace
+	- cd ..
+	
 7. run Django project: python manage.py runserver 0.0.0.0:9000
 
 ---
