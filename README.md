@@ -4,6 +4,11 @@ Open-access manuscript: https://www.coviss.org/wp-content/uploads/2018/11/freela
 
 WACV proceedings: to be included
 
+### Disclaimer: this project is the first experience of the involved students with Javascript and Django. Despite our efforts to keep it fairly organized and functional, there is significant room for improvement. We appreciate any feedback for improving the tool, but cannot provide any type of support/warranty
+
+
+## Notes on code organization: check Notes_on_FreeLabel.pdf
+
 ## Requirements:
 - python3 and corresponding pip3
 - virtualenv, which can be installed through 'pip install virtualenv' (see https://virtualenv.pypa.io/en/latest/installation/)
