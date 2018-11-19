@@ -5,7 +5,7 @@ Open-access manuscript: https://www.coviss.org/wp-content/uploads/2018/11/freela
 WACV proceedings: to be included
 
 ## Download, configuration and deploying the interface:
-
+Requires virtualenv , which can be installed through 'pip install virtualenv' (see https://virtualenv.pypa.io/en/latest/installation/)
 1. clone repository
 2. cd freelabel-wacv/
 3. create virtual environment: virtualenv .
