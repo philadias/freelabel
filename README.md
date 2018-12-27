@@ -6,6 +6,7 @@ WACV proceedings: to be included
 
 ### Disclaimer: this project is the first experience of the involved students with Javascript and Django. Despite our efforts to keep it fairly organized and functional, there is significant room for improvement. We appreciate any feedback for improving the tool, but cannot provide any type of support/warranty
 
+### Available under the Non-Profit Open Software License: for more details https://opensource.org/licenses/NPOSL-3.0
 
 ## Notes on code organization: check Notes_on_FreeLabel.pdf
 
