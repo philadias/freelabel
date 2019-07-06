@@ -1,8 +1,26 @@
 FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces
 
-Open-access manuscript: https://www.coviss.org/wp-content/uploads/2018/11/freelabel_preprint.pdf 
+## Underlying ideas: the paper
+This README file is to accompany code for pixel-level image annotation, lead by Philipe Dias to his paper: FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces published in [WACV 2019](https://ieeexplore.ieee.org/document/8659167):
 
-WACV proceedings: to be included
+```
+@INPROCEEDINGS{8659167,
+author={P. A. {Dias} and Z. {Shen} and A. {Tabb} and H. {Medeiros}},
+booktitle={2019 IEEE Winter Conference on Applications of Computer Vision (WACV)},
+title={FreeLabel: A Publicly Available Annotation Tool Based on Freehand Traces},
+year={2019},
+volume={},
+number={},
+pages={21-30},
+keywords={computer vision;image segmentation;Internet;learning (artificial intelligence);public domain software;user interfaces;freehand scribbles;FreeLabel;intuitive open-source Web interface;agricultural domain;high-quality segmentation masks;deep learning models;image understanding tasks;image segmentation datasets;large-scale annotation;freehand traces;image dataset;private annotation;crowdsourced annotation;PASCAL dataset;Image segmentation;Tools;Labeling;Training;Task analysis;Level set;Image color analysis},
+doi={10.1109/WACV.2019.00010},
+ISSN={1550-5790},
+month={Jan},}
+```
+This paper is also available from arXiv:1902.06806 [cs.CV] [here](https://arxiv.org/abs/1902.06806). The arxiv version is identical in content to the IEEE version.
+
+## Citing the code
+The code may be used according to the license below.  If the results of the code are used as a part of a system described in a publication, we request that the authors cite the published paper at a minimum. 
 
 ### Disclaimer: this project is the first experience of the involved students with Javascript and Django. Despite our efforts to keep it fairly organized and functional, there is significant room for improvement. We appreciate any feedback for improving the tool, but cannot provide any type of support/warranty
 
