@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+<html>
+    <head>
+        <title>FreeLabel</title>
+    </head>
+
+    <body>
+        <h3>FreeLabel annotation tool </h3> 
+
+        {% if user.is_authenticated %}
+            <h3> Hello {{ user.username }}!</h3>        
+           
+            <h2>First time around? Please do the training session <br />(it takes less than 10min)! </h2>        
+            <a href="/freelabel/train/">Training</a><br />
+            
+
+            <h2>Already experienced? Go ahead and play </h2>        
+            <a href="/freelabel/play/">Play!</a></br>
+            <a href="/freelabel/playFlowers/">Go directly to flowers</a><br />
+            <a href="/freelabel/logout/">Logout</a><br />
+            <a href="/freelabel/playCustom/">Custom Dataset</a><br />
+
+            <h2>Select your custom dataset</h2>    
+            <form id="custom_form" method="post" action="/freelabel/getfolder/">
+                {% csrf_token %}
+                Folder: <input type="text" name="folderpath" value="" size="50" />
+                <br />
+                <input type="submit" value="submit" />
+            </form>
+
+            Number of categories: <input type="text" name="numcategs" id="numcategs" value="" size="10" /> 
+            <button type="button" id="btnList" onclick="createList();" style="margin-right:20px">Create list</button>
+            <p>Choose colors and labels for each category:</p>
+                <div id="container">
+                    <label id ="objects">Category: <select id="dcolor">                             
+                    </select></label>
+                </div>
+              <script type="text/javascript">    
+                  // set global variable and trace color with current selected thickness
+                  function color_choose(color_select){
+                    if(color_select == 1)
+                      colorvec = 'rgb(0,0,0)';
+                    else if(color_select == 2)
+                      colorvec = 'rgb(128,0,0)';
+                    else if(color_select == 3)
+                      colorvec = 'rgb(0,128,0)';
+                    else if(color_select == 4)
+                      colorvec = 'rgb(128,128,0)';
+                    else if(color_select == 5)
+                      colorvec = 'rgb(0,0,128)';
+                    else if(color_select == 6)
+                      colorvec = 'rgb(128,0,128)';
+                    else if(color_select == 7)
+                      colorvec = 'rgb(0,128,128)';
+                    else if(color_select == 8)
+                      colorvec = 'rgb(128,128,128)';
+                    else if(color_select == 9)
+                      colorvec = 'rgb(64,0,0)';
+                    else if(color_select == 10)
+                      colorvec = 'rgb(192,0,0)';
+                    else if(color_select == 11)
+                      colorvec = 'rgb(64,128,0)';
+                    else if(color_select == 12)
+                      colorvec = 'rgb(192,128,0)';
+                    else if(color_select == 13)
+                      colorvec = 'rgb(64,0,128)';
+                    else if(color_select == 14)
+                      colorvec = 'rgb(192,0,128)';
+                    else if(color_select == 15)
+                      colorvec = 'rgb(64,128,128)';
+                    else if(color_select == 16)
+                      colorvec = 'rgb(192,128,128)';
+                    else if(color_select == 17)
+                      colorvec = 'rgb(0,64,0)';
+                    else if(color_select == 18)
+                      colorvec = 'rgb(128,64,0)';
+                    else if(color_select == 19)
+                      colorvec = 'rgb(0,192,0)';
+                    else if(color_select == 20)
+                      colorvec = 'rgb(128,192,0)';
+                    else if(color_select == 21)
+                      colorvec = 'rgb(0,64,128)';
+                    else
+                      colorvec = 'grey';
+
+                    return colorvec;
+                  }
+
+                  function createList(){
+                      
+                      // remove rest elements from current array
+                      //Create array of options to be added
+                      var array = ["background","aeroplane","bicycle","bird","boat","bottle","bus","car","cat","chair","cow","diningtable","dog","horse","motorbike","person","pottedplant","sheep","sofa","train","tvmonitor"];
+
+                      var numCls = document.getElementById("numcategs").value;
+                      var mySelect = document.getElementById("dcolor");
+
+                      //Create and append the options
+                      for (var k = 0; k < numCls; k++) {
+                        var option = document.createElement("option");
+                        //set value as first, 1,2,3....21
+                        var j = k+1;                       
+                        option.id = "opt" + j;
+                        option.name = "opt" + j;
+                        var color_ = color_choose(j);
+                        option.style.color  = color_
+                        // alert(option.value)
+                        //alert(option.id);
+                        option.value = j;
+                        option.text = "opt" + j; //actually,0 is background; we need to change its value to 1
+                        mySelect.appendChild(option);
+
+                      }          
+                  }                  
+              </script>
+
+<!-- 
+            <div>
+                <input type="color" id="body" name="body"
+                        value=color_choose(2);>
+                <label for="body">Body</label>
+            </div> -->
+
+
+            <!-- <input type="file" id="flup" onchange="getfolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple /> -->
+
+            <a href="/freelabel/playCustom/">Annotate your dataset</a><br />
+
+        {% else %}
+            <strong>Please register if you don't have account!</strong><br />
+
+            <form id="user_form" method="post" action="/freelabel/register/"
+                    enctype="multipart/form-data">
+
+            {% csrf_token %}
+
+            <!-- Display each form. The as_p method wraps each element in a paragraph
+                 (<p>) element. This ensures each element appears on a new line,
+                 making everything look neater. -->
+            {{ user_form.as_p }}
+            <!-- {{ profile_form.as_p }} -->
+
+            <!-- Provide a button to click to submit the form. -->
+            <input type="submit" name="submit" value="Register" />
+            <br/>
+            <br/>                  
+            {% if registered %}
+                <strong>Thank you for registering!</strong>
+                <p>Please log in below.</p>
+            {% else %}
+                <strong>If you have account, please log in!</strong><br/>
+            {% endif %}
+            <input type="button" onclick="location.href='/freelabel/login/';" value="Login" />
+            </form>           
+        {% endif %}      
+
+        <h3>Instructions for Pilot experiments with MTurk </h3>
+        <h4>Goal: Get the highest accuracy % that you can, as quick as possible. </h4>
+        <img id="scoreRules" src="/static/images/scoreRules.png" style="height: 300px">        
+        <ul>
+        <li> Accuracy is the base factor for your score, while time is a bonus factor. </li>
+        <li> Some images are hard, some are very easy. Take your time and learn from the hard ones, soon they will all look much easier! </li>
+        <li> Images with more objects are harder, but the bonus time decays much slower. Don't give up, take your time and profit from them! </li>
+        </ul>
+
+        <ol>
+            <li>Playing a game (Training + 6 images,~20min)-&nbsp;<label>Task preview - Phase 1:</label>&nbsp;<a class="dont-break-out" href="https://drive.google.com/uc?id=1zS5SStaqjWHGUVue1USvoKPSUT2ogo4n" style="background-color: rgb(255, 255, 255);" target="_blank">Phase 1 example</a><br />
+            At first, your goal is to crop (segment) the objects indicated for each image. To score high, the main factor is that your masks must fit the objects tightly (high accuracy). Plus, there is bonus for speed: the quicker you do it, the higher your score. A score ranking is constantly updated with the best avg. scores obtained so far. But don&#39;t worry, it is just a reference (and extra motivation), your payment is NOT conditioned on your position in this ranking.<br />
+            <br />
+            <span style="color:#FF0000;"><strong>Minimum accuracy per image:</strong></span>&nbsp;the &quot;Finish&quot; for moving to the next image becomes available only if your segmentation is at least 90% accurate for each category. You can skip up to 3 images, in case they look impossible to finish.<br />
+            <br />
+            To get familiar with the commands, please <strong>make sure to carefully follow the Training session shown at the beginning</strong>.&nbsp;<br />
+            &nbsp;</li>
+            <li>Annotating different images with flowers (16 images, ~60min) -&nbsp;<label>Task preview - Phase 2:</label>&nbsp;<a class="dont-break-out" href="https://drive.google.com/uc?id=1Ad-FPrva1fjyQCjSy2q05AGVD5IXa613" style="background-color: rgb(255, 255, 255);" target="_blank">Phase 2 example</a><br />
+            After playing the game, you will be requested to annotate images with flowers, without any score/feedback. However, <strong>your avg. accuracy for the last 4 images is constantly verified. If it&#39;s not higher than 80%, you will have to redo these last 4 images</strong>. Pay close attention to examples and try to get masks that fit all visible flowers as tightly as possible.&nbsp;</li>
+        </ol>
+
+    </body>
+</html>

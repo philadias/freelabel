@@ -20,13 +20,47 @@ import json
 import urllib.request as ur
 
 from skimage.draw import line
-from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline
+from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg
 
 from random import shuffle
 
 import scipy.io as sio
 
 import datetime, math
+
+from threading import Thread
+
+# for local folder usage (https://stackoverflow.com/questions/39801718/how-to-run-a-http-server-which-serves-a-specific-path)
+from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
+# import SimpleHTTPServer
+
+class HTTPHandler(SimpleHTTPRequestHandler):
+    # def do_POST(self):
+    #     print("here")
+    #     if self.path.startswith('/kill_server'):
+    #         print("Server is going down, run it again manually!")
+    #         def kill_me_please(server):
+    #             server.shutdown()
+    #             server.server_close()
+    #         # httpd = HTTPServer('', ("", 8889))
+    #         t=Thread(target=kill_me_please,args=(self.server,))
+    #         t.start()                
+    #         self.send_error(500)   
+    #     print("move on")
+    #     return  
+
+    """This handler uses server.base_path instead of always using os.getcwd()"""
+    def translate_path(self, path):
+        path = SimpleHTTPRequestHandler.translate_path(self, path)
+        relpath = os.path.relpath(path, os.getcwd())
+        fullpath = os.path.join(self.server.base_path, relpath)
+        return fullpath  
+
+class HTTPServer(BaseHTTPServer):
+    """The main server, you pass in base_path which is the path you want to serve requests from"""
+    def __init__(self, base_path, server_address, RequestHandlerClass=HTTPHandler):
+        self.base_path = base_path
+        BaseHTTPServer.__init__(self, server_address, RequestHandlerClass)
 
 # used to return numpy arrays via AJAX to JS side
 class NumpyEncoder(json.JSONEncoder):
@@ -42,7 +76,210 @@ def main(request):
 # renders the main playing page
 def play(request):    
     return render(request, 'freelabel/main.html')    
+
+####
+def playCustom(request):    
+    return render(request, 'freelabel/customset.html')        
   
+def threadfunction(web_dir):
+
+    PORT = 8889
+        # web_dir = '/home/philipe/Pictures/test/'
+    httpd = HTTPServer(web_dir, ("", 0))   
+    
+    httpd.handle_request()
+
+def setcustomfolder(httpd):
+    # If the request is a HTTP POST, try to pull out the relevant information.
+    # if request.method == 'POST':
+        # web_dir = request.POST.get('folderpath')
+    # web_dir = '/home/philipe/Pictures/test/'
+
+    httpd.serve_forever()
+
+    # print("###### DONE ###########")
+
+    # return render(request, 'freelabel/register.html') 
+
+def loadcustom(request):
+    
+    localFolder = request.POST.get('folderpath')
+    setname = request.POST.get('datasetname')
+
+    # # web_dir = '/home/philipe/Pictures/test/'
+    # httpd = HTTPServer(localFolder, ("", PORT))
+    # httpd.handle_request()
+
+    httpd = HTTPServer(localFolder, ("", 0))
+    sockinfo = httpd.socket.getsockname()
+    print(sockinfo[1])
+    PORT = sockinfo[1]
+
+    t=Thread(target=setcustomfolder,args=[httpd])
+    t.start()
+
+    username = request.user.username
+
+    # get list of files in folder of custom dataset
+    # imgList = glob.glob("/home/philipe/Pictures/test/*.jpg")
+    # localFolder = '/home/philipe/Pictures/test2/'
+    imgList = [os.path.basename(x) for x in glob.glob(localFolder+"*.jpg")]
+
+    # imgList = ['/' + s for s in imgList]
+    print(imgList)
+
+    # load text file with list of categories in the dataset
+    f = open(os.path.join(localFolder,'categories.txt'), 'r')
+    catList = f.readlines()
+    f.close()
+
+    # check if there is already a sequence of images for this user.
+    # If not, creates one
+    filename = 'static/lists/imgs_' + setname + '_' + username + '.txt'
+
+    if not os.path.exists(filename):
+        shuffleList(filename,len(imgList))
+
+    idsList = np.loadtxt(filename, delimiter=',')    
+
+    idsList = list(idsList)
+
+    # get current total score and next image to be labeled
+    filename = 'static/lists/info'+ setname +'_' + username + '.txt'
+    if not os.path.exists(filename):
+        nextId = 0
+    else:          
+        info = np.loadtxt(filename)   
+        nextId = int(info)
+    print(nextId)
+    print(localFolder)
+    return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'catList':catList,'idsList': idsList,'username': username,'nextId':nextId,'localFolder':localFolder}), content_type="application/json")
+
+def refineCustom(request): 
+    # get array of user traces from json 
+    jsonAnns = json.loads(request.session['userAnns'])
+    # convert it to numpy
+    userAnns = np.array(jsonAnns["userAnns"])
+
+    # get coordinates of trace to be drawn
+    traces = request.POST.getlist('trace[]')   
+
+    userAnns = drawTrace(userAnns,traces)
+
+    username = request.user.username
+
+    # get URL of image
+    url = request.POST.get('img')
+    # get random ID that defines mask filename
+    ID = request.POST.get('ID')
+    # weight of traces, which defines the spacing between samples in RGR
+    weight_ = int(request.POST.get('weight'))
+
+    # theta_m: regulates weight of color-similarity vs spatial-proximity
+    # divide by to adjust from [1,10] to [.1,1] 
+    m = float(request.POST.get('m'))/10
+
+    # remove older files
+    for filename in glob.glob("static/"+username+"/refined*"):
+        os.remove(filename) 
+
+    # open image URL
+    img = readLocalImg(url)
+    # download image and convert to numpy array
+    img = np.asarray(img, dtype="uint8")    
+
+    # call RGR and get mask as return 
+    im_color = startRGR(username,img,userAnns,ID,weight_,m)   
+
+    request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
+
+    return render(request, 'freelabel/main.html')
+
+def writeCustomLog(request):
+
+    # get the username
+    username = request.user.username
+
+    jsonAnns = json.loads(request.session['userAnns'])
+    anns = np.array(jsonAnns["userAnns"])
+
+    # total score and next i in list of images to load
+    next_i = int(request.POST.get('next_i'))  
+    filename = 'static/lists/infoCustom_' + username + '.txt'
+    np.savetxt(filename,[next_i], fmt='%d', delimiter=',')       
+
+    #id of image
+    img_file = request.POST.get('img_file')  
+
+    # get newest ID of file once window reload  
+    # file_ID = request.POST.get('fileID')    
+    file_ID = username;
+    # save .mat with final mask and annotations, just in case we need it afterwards
+    finalMask = np.load('static/'+username+'/lastmask.npy')
+    
+    setname = request.POST.get('datasetname')
+
+    directory = 'static/log/masks/' + file_ID + '/' + setname  
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    filename = directory + '/' + os.path.basename(img_file) + '.mat';
+    sio.savemat(filename, mdict={'finalMask': finalMask, 'anns': anns})       
+
+    # compute percentage of how many pixels were annotated by the user
+    total_anns = np.count_nonzero(anns)
+    total_anns = 100*(total_anns/anns.size)
+
+    # filename = 'static/log/Results_' + file_ID + '.txt'
+    filename = 'static/log/Log'+setname+'_' + username + '.txt'
+
+    # if file exists, only append data
+    if not os.path.exists(filename):
+        a = open(filename, 'w+')
+        a.close()
+    #append data here   
+
+    #time spend
+    time = request.POST.get('time')
+    maxTime = request.POST.get('maxTime')
+
+    #number of traces
+    trace_number = request.POST.get('trace_number')
+
+    #length of all traces
+
+    #number of clicks on "refine"
+    refine_number = request.POST.get('refine_number')
+
+    #accuracies obtained   
+    accuracies = request.POST.getlist('accuracies[]')
+
+    # string containing all info for this image: 
+    str_ = str(os.path.basename(img_file)) + ';' +  str(time) + ';' + \
+           ';' + str(trace_number) + ';' +  '%.3f'%(float(total_anns)) + ';' + \
+           str(refine_number)\
+
+    if accuracies is None:
+        accuracies = 0
+
+    for acc_ in accuracies:
+        str_ = str_ + ',' + '%.3f'%(float(acc_))
+
+    # get array of accuracies for each class + average. If empty (i.e. no refinement performed yet)
+    str_ = str_ + '\n'
+
+    a=open(filename, "a+")
+    a.write(str_)
+    a.close()
+
+     # remove older files
+    for filename in glob.glob("static/"+username+"/GTimage*"):
+        os.remove(filename) 
+
+    return render(request, 'freelabel/main.html')    
+
+####
 def loadlist(request):
     # load text file with list of images
     f = open('static/imgList2.txt', 'r')

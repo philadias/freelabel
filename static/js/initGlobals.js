@@ -1,9 +1,12 @@
       var ltScore;
 
+      var datasetname = "PASCAL";
+
       // flag indicating if dataset has GT for all images or not (default: TRUE)
       var datasetGT = true;
 
       var imgArray = new Array(); // image URLs
+      var localPathArray = new Array(); // image local paths
       var gtArray = new Array();  // ground-truth (GT) URLs
       var clsArray = new Array();  // list of classes present in each GT
       var catArray = new Array(); // categories names

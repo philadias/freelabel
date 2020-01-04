@@ -26,4 +26,10 @@ urlpatterns = [
     path('train/loadTraining/', viewsTrain.loadTraining, name='loadlist'),
 
     path('video/', views.playVideo, name='playVideo'),
+
+    path('playCustom/', views.playCustom, name='playCustom'),
+    path('playCustom/loadcustom/', views.loadcustom, name='loadcustom'),
+    path('refineCustom/', views.refineCustom, name='refineCustom'),
+    path('getfolder/', views.setcustomfolder, name='getfolder'),
+    path('playCustom/writeCustomLog/', views.writeCustomLog, name='writeCustomLog'),
 ]

@@ -21,6 +21,22 @@
             <a href="/freelabel/play/">Play!</a></br>
             <a href="/freelabel/playFlowers/">Go directly to flowers</a><br />
             <a href="/freelabel/logout/">Logout</a><br />
+            <a href="/freelabel/playCustom/">Custom Dataset</a><br />
+
+            <h2>Select your custom dataset</h2>    
+<!--             <form id="custom_form" method="post" action="/freelabel/getfolder/">
+                {% csrf_token %}
+                Folder: <input type="text" name="folderpath" value="" size="50" />
+                <br />
+                <input type="submit" value="submit" />
+            </form> -->
+
+            <!-- <a href="/freelabel/getfolder/">Choose folder</a></br> -->
+
+            <!-- <input type="file" id="flup" onchange="getfolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple /> -->
+
+            <a href="/freelabel/playCustom/">Annotate your dataset</a><br />
+
         {% else %}
             <strong>Please register if you don't have account!</strong><br />
 
