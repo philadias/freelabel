@@ -83,32 +83,19 @@ def playCustom(request):
   
 def threadfunction(web_dir):
 
+    # you can pick any PORT that is convenient for you
     PORT = 8889
-        # web_dir = '/home/philipe/Pictures/test/'
     httpd = HTTPServer(web_dir, ("", 0))   
     
     httpd.handle_request()
 
 def setcustomfolder(httpd):
-    # If the request is a HTTP POST, try to pull out the relevant information.
-    # if request.method == 'POST':
-        # web_dir = request.POST.get('folderpath')
-    # web_dir = '/home/philipe/Pictures/test/'
-
     httpd.serve_forever()
-
-    # print("###### DONE ###########")
-
-    # return render(request, 'freelabel/register.html') 
 
 def loadcustom(request):
     
     localFolder = request.POST.get('folderpath')
     setname = request.POST.get('datasetname')
-
-    # # web_dir = '/home/philipe/Pictures/test/'
-    # httpd = HTTPServer(localFolder, ("", PORT))
-    # httpd.handle_request()
 
     httpd = HTTPServer(localFolder, ("", 0))
     sockinfo = httpd.socket.getsockname()
@@ -120,12 +107,8 @@ def loadcustom(request):
 
     username = request.user.username
 
-    # get list of files in folder of custom dataset
-    # imgList = glob.glob("/home/philipe/Pictures/test/*.jpg")
-    # localFolder = '/home/philipe/Pictures/test2/'
+    # get list of files in folder of custom dataset( IT IS ASSUMING JPG HERE, CHANGE AS NEEDED)
     imgList = [os.path.basename(x) for x in glob.glob(localFolder+"*.jpg")]
-
-    # imgList = ['/' + s for s in imgList]
     print(imgList)
 
     # load text file with list of categories in the dataset
@@ -212,7 +195,6 @@ def writeCustomLog(request):
     img_file = request.POST.get('img_file')  
 
     # get newest ID of file once window reload  
-    # file_ID = request.POST.get('fileID')    
     file_ID = username;
     # save .mat with final mask and annotations, just in case we need it afterwards
     finalMask = np.load('static/'+username+'/lastmask.npy')
