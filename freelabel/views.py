@@ -172,7 +172,7 @@ def refineCustom(request):
     img = np.asarray(img, dtype="uint8")    
 
     # call RGR and get mask as return 
-    im_color = startRGR(username,img,userAnns,ID,weight_,m)   
+    im_color = startRGR(username,img,userAnns,ID,weight_,m,True)   
 
     request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
 
@@ -580,7 +580,7 @@ def refine(request):
     img = np.asarray(bytearray(resp.read()), dtype="uint8")    
 
     # call RGR and get mask as return 
-    im_color = startRGR(username,img,userAnns,ID,weight_,m)   
+    im_color = startRGR(username,img,userAnns,ID,weight_,m,False)   
 
     request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
 

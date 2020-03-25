@@ -197,9 +197,11 @@ def main(username,img,anns,weight_,m):
 
     return im_color
 
-def startRGR(username,img,userAnns,cnt,weight_,m):
+def startRGR(username,img,userAnns,cnt,weight_,m,islocal_):
 
-    # img = cv.imdecode(imgnp, cv.IMREAD_COLOR)
+    # if the image is from the web, decobe url
+    if islocal_==False:
+        img = cv.imdecode(img, cv.IMREAD_COLOR)
     im_color = main(username,img,userAnns,weight_,m)
 
     cv.imwrite('static/'+username+'/refined'+str(cnt)+'.png', im_color)

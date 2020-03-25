@@ -32,7 +32,7 @@
           var PORT = resp.PORT;
           // var linesGT = resp.gtList;
           // var linesIds = resp.idsList;
-          alert(PORT)
+
           // populate corresponding arrays with info loaded from the .txt files
           for (var j = 0, len = lines.length; j < len; j++) {
             imgArray[j] = "http://0.0.0.0:"+PORT+"/"+lines[j];
@@ -188,7 +188,6 @@
       document.getElementById("maskImg").src = '#';
       // get image URL according to index i and the randomly permuted list 
       var pic = imgArray[listIDs[i]];
-      alert(pic)
       // set image URL to image element on bottom canvas
       document.getElementById("initial").src = pic.replace();
       var img = document.getElementById("initial");
@@ -374,7 +373,7 @@
                   return;
                 }                 
             },
-            timeout: 8000
+            timeout: 30000
           });
   }
 
