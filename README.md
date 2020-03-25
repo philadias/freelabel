@@ -59,6 +59,8 @@ The branch 'beta_custom_datasets' now supports annotating images from a local fo
 	
 - The code is set to deal with .jpg images. To change the extention, edit line 111 of ./freelabel/views.py, in function loadcustom
 
+- Colors assigned to each category are defined in 'static/js/base.js', function 'color_choose()'
+
 ## Accelerate refinement time if needed
 - If the code crashes when calling the refinement function, very likely its due to timeout. Thera are two options to overcome this:
 1. decrease the number of refinement iterations, which is defined as "numSets" in ourLib.py (function main, line 107)
