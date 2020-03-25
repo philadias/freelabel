@@ -52,3 +52,14 @@ The code may be used according to the license below.  If the results of the code
 2. register user/password (no need for email)
 2. login with registered user
 3. Done!
+
+## Working with custom datasets (added March 25th 2020)
+The branch 'beta_custom_datasets' now supports annotating images from a local folder. Some comments:
+- In addition to the images to be annotated, insert in your local folder a file named 'categories.txt' that contains the categories to be annotated. It follows the PASCAL standard, with one category per line. One example file was added to this repository.
+	
+- The code is set to deal with .jpg images. To change the extention, edit line 111 of ./freelabel/views.py, in function loadcustom
+
+## Accelerate refinement time if needed
+- If the code crashes when calling the refinement function, very likely its due to timeout. Thera are two options to overcome this:
+1. decrease the number of refinement iterations, which is defined as "numSets" in ourLib.py (function main, line 107)
+2. increase the timeout threshold in .js files (customsetB.js function callRefineCustom, base.js function callRefine)
