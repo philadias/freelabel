@@ -1,4 +1,4 @@
-#!/home/philipe/Codes/freelabel/bin/python3
+#!/home/philipe/Codes/freelabel/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

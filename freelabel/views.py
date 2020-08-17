@@ -136,7 +136,7 @@ def loadcustom(request):
     # check if there is already a sequence of images for this user.
     # If not, creates one
     filename = 'static/lists/imgs_' + setname + '_' + username + '.txt'
-
+    print(filename)
     if not os.path.exists(filename):
         shuffleList(filename,len(imgList))
 
@@ -185,6 +185,7 @@ def refineCustom(request):
 
     # open image URL
     img = readLocalImg(url)
+    print(url)
     # download image and convert to numpy array
     img = np.asarray(img, dtype="uint8")    
 

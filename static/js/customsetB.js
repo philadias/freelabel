@@ -32,7 +32,6 @@
           var PORT = resp.PORT;
           // var linesGT = resp.gtList;
           // var linesIds = resp.idsList;
-          alert(PORT)
           // populate corresponding arrays with info loaded from the .txt files
           for (var j = 0, len = lines.length; j < len; j++) {
             imgArray[j] = "http://0.0.0.0:"+PORT+"/"+lines[j];
@@ -188,7 +187,6 @@
       document.getElementById("maskImg").src = '#';
       // get image URL according to index i and the randomly permuted list 
       var pic = imgArray[listIDs[i]];
-      alert(pic)
       // set image URL to image element on bottom canvas
       document.getElementById("initial").src = pic.replace();
       var img = document.getElementById("initial");
@@ -301,7 +299,8 @@
           type: 'POST',
           data: {"img": imgURL, "ID": ID, "img_size": img_size, "weight": weight_, "m": m_,'trace': traces},
           tryCount : 0,
-          retryLimit : 3,          
+          retryLimit : 3,    
+          timeout: 50000,      
           success: function(data){
        
               traces = new Array();
@@ -374,7 +373,7 @@
                   return;
                 }                 
             },
-            timeout: 8000
+            timeout: 50000
           });
   }
 
@@ -528,4 +527,82 @@
         option.text = catArray[k]; //actually,0 is background; we need to change its value to 1
         mySelect.appendChild(option);
       }          
+
+      var svgns = "http://www.w3.org/2000/svg";
+
+      //create and append rectangles showing category and color
+      for (var k = 0; k < catArray.length; k++) {
+        // alert("append "+k)
+        var rect = document.createElementNS(svgns, 'rect');
+        rect.setAttributeNS(null, 'x', 0);
+        rect.setAttributeNS(null, 'y', k*20);
+        rect.setAttributeNS(null, 'height', '15');
+        rect.setAttributeNS(null, 'width', '35');
+        rect.setAttributeNS(null, 'fill', getColor(k+1));
+        document.getElementById('svgOne').appendChild(rect);
+
+        var text_ = document.createElementNS(svgns,'text');
+        text_.setAttributeNS(null, 'x', 45);
+        text_.setAttributeNS(null, 'y', 12+k*20);
+        text_.setAttributeNS(null, 'font-family', 'Verdana');
+        text_.setAttributeNS(null, 'font-size', '12');
+        text_.setAttributeNS(null, 'fill', 'black');
+        // text_.setAttributeNS(null, 'textContent', catArray[k]);
+        var textNode = document.createTextNode(catArray[k]);
+        text_.appendChild(textNode);
+        document.getElementById('svgOne').appendChild(text_);
+      }                
+  }
+
+  function getColor(color_select){
+      // set global variable and trace color with current selected thickness      
+    var colorRGB;
+
+    if(color_select == 1)
+      colorRGB = 'rgb(0,0,0)';
+    else if(color_select == 2)
+      colorRGB = 'rgb(128,0,0)';
+    else if(color_select == 3)
+      colorRGB = 'rgb(0,128,0)';
+    else if(color_select == 4)
+      colorRGB = 'rgb(128,128,0)';
+    else if(color_select == 5)
+      colorRGB = 'rgb(0,0,128)';
+    else if(color_select == 6)
+      colorRGB = 'rgb(128,0,128)';
+    else if(color_select == 7)
+      colorRGB = 'rgb(0,128,128)';
+    else if(color_select == 8)
+      colorRGB = 'rgb(128,128,128)';
+    else if(color_select == 9)
+      colorRGB = 'rgb(64,0,0)';
+    else if(color_select == 10)
+      colorRGB = 'rgb(192,0,0)';
+    else if(color_select == 11)
+      colorRGB = 'rgb(64,128,0)';
+    else if(color_select == 12)
+      colorRGB = 'rgb(192,128,0)';
+    else if(color_select == 13)
+      colorRGB = 'rgb(64,0,128)';
+    else if(color_select == 14)
+      colorRGB = 'rgb(192,0,128)';
+    else if(color_select == 15)
+      colorRGB = 'rgb(64,128,128)';
+    else if(color_select == 16)
+      colorRGB = 'rgb(192,128,128)';
+    else if(color_select == 17)
+      colorRGB = 'rgb(0,64,0)';
+    else if(color_select == 18)
+      colorRGB = 'rgb(128,64,0)';
+    else if(color_select == 19)
+      colorRGB = 'rgb(0,192,0)';
+    else if(color_select == 20)
+      colorRGB = 'rgb(128,192,0)';
+    else if(color_select == 21)
+      colorRGB = 'rgb(0,64,128)';
+    else
+      colorRGB = 'grey';
+    
+    return colorRGB
+
   }

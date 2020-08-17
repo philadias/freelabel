@@ -77,6 +77,7 @@ def regGrowing(area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,cl
 ########
 def main(username,img,anns,weight_,m):
     # get image size, basically height and width
+    t1 = time.time()
     
     height, width, channels = img.shape
     heightAnns, widthAnns = anns.shape
@@ -104,7 +105,7 @@ def main(username,img,anns,weight_,m):
     ## RGR parameters
     # fixed parameters
     # m = .1  # theta_m: balance between
-    numSets = 8    # number of seeds sets (samplings)
+    numSets = 4    # number of seeds sets (samplings)
     # cellSize = 10-int(weight_)   # average spacing between samples
     cellSize = 1.333   # average spacing between samples
 
@@ -161,6 +162,8 @@ def main(username,img,anns,weight_,m):
     for proc in jobs:
         proc.join()
 
+    t2 = time.time()
+    print("### TIME: %.2f" % (t2-t1))
     outputPar = return_dict.values()    
 
     outputPar = np.asarray(outputPar)
@@ -194,6 +197,7 @@ def main(username,img,anns,weight_,m):
     b, g, r = cv.split(im_color)
     rgba = [b,g,r, alpha]
     im_color = cv.merge(rgba,4) 
+    print("### DONE HERE ###")
 
     return im_color
 
@@ -201,8 +205,10 @@ def startRGR(username,img,userAnns,cnt,weight_,m):
 
     # img = cv.imdecode(imgnp, cv.IMREAD_COLOR)
     im_color = main(username,img,userAnns,weight_,m)
+    print("### SAVING ###")
 
     cv.imwrite('static/'+username+'/refined'+str(cnt)+'.png', im_color)
+    print("### DONE ###")
 
 def traceLine(img,r0,c0,r1,c1,catId,thick):
     cv.line(img,(c0,r0),(c1,r1),catId,thick)

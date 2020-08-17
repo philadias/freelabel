@@ -1,4 +1,4 @@
-#!/home/philipe/Codes/freelabel/bin/python3
+#!/home/philipe/Codes/freelabel/bin/python
 from django.core import management
 
 if __name__ == "__main__":
