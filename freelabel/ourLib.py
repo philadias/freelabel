@@ -75,8 +75,6 @@ def regGrowing(area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,cl
     return_dict[itSet] = clsScores
 ########
 def main(username,img,anns,weight_,m,scoremaps,uncMap):
-    profiler = Profiler()
-    profiler.start()
 
     # get image size, basically height and width
     t1 = time.time()
