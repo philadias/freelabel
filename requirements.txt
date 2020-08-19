@@ -69,3 +69,4 @@ scikit_image == 0.14.0
 # rango/viewsFl.py: 16
 # rango/viewsTrain.py: 16
 scipy == 1.1.0
+pandas

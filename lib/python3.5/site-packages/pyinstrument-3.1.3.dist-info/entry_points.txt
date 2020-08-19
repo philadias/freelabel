@@ -1,0 +1,3 @@
+[console_scripts]
+pyinstrument = pyinstrument.__main__:main
+

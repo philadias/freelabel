@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: pyinstrument-cext
+Version: 0.2.2
+Summary: A CPython extension supporting pyinstrument
+Home-page: https://github.com/joerick/pyinstrument_cext
+Author: Joe Rickerby
+Author-email: joerick@mac.com
+License: UNKNOWN
+Keywords: profiling,profile,profiler,statistical,setstatprofile
+Platform: UNKNOWN
+
+UNKNOWN
+
+

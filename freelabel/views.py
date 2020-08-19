@@ -20,7 +20,7 @@ import json
 import urllib.request as ur
 
 from skimage.draw import line
-from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg
+from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg, loadLocalGT
 
 from random import shuffle
 
@@ -123,7 +123,11 @@ def loadcustom(request):
     # get list of files in folder of custom dataset
     # imgList = glob.glob("/home/philipe/Pictures/test/*.jpg")
     # localFolder = '/home/philipe/Pictures/test2/'
-    imgList = [os.path.basename(x) for x in glob.glob(localFolder+"*.jpg")]
+    imgList = []
+    cnnList = []
+    for it,x in enumerate(glob.glob(localFolder + "*.jpg")):
+        imgList.append(os.path.basename(x))
+        cnnList.append(imgList[it][0:-4] + ".png")
 
     # imgList = ['/' + s for s in imgList]
     print(imgList)
@@ -138,7 +142,8 @@ def loadcustom(request):
     filename = 'static/lists/imgs_' + setname + '_' + username + '.txt'
     print(filename)
     if not os.path.exists(filename):
-        shuffleList(filename,len(imgList))
+        shuffledIds = shuffleList(filename,len(imgList))
+        # cnnList = cnnList[shuffledIds]
 
     idsList = np.loadtxt(filename, delimiter=',')    
 
@@ -153,7 +158,7 @@ def loadcustom(request):
         nextId = int(info)
     print(nextId)
     print(localFolder)
-    return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'catList':catList,'idsList': idsList,'username': username,'nextId':nextId,'localFolder':localFolder}), content_type="application/json")
+    return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'cnnList': cnnList,'catList':catList,'idsList': idsList,'username': username,'nextId':nextId,'localFolder':localFolder}), content_type="application/json")
 
 def refineCustom(request): 
     # get array of user traces from json 
@@ -189,8 +194,14 @@ def refineCustom(request):
     # download image and convert to numpy array
     img = np.asarray(img, dtype="uint8")    
 
+    # load detection and uncertainties from local .mat file
+    # get URL
+    # url = request.POST.get('img')
+    urlGT,_ = os.path.splitext(url)
+    # load .mat info from URL
+    scoremaps,uncMap = loadLocalGT(urlGT+'.mat')
     # call RGR and get mask as return 
-    im_color = startRGR(username,img,userAnns,ID,weight_,m)   
+    im_color = startRGR(username,img,userAnns,ID,weight_,m,scoremaps,uncMap)
 
     request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
 
@@ -314,7 +325,7 @@ def loadlist(request):
     # print(username)
 
     if not os.path.exists(filename):
-        shuffleList(filename,len(imgList))
+        _ =shuffleList(filename,len(imgList))
 
     idsList = np.loadtxt(filename, delimiter=',')    
     idsList = list(idsList)
@@ -386,7 +397,8 @@ def shuffleList(filename,lst_length):
     str_ = '';
 
     shuffled_ = np.random.permutation(lst_length)
-    np.savetxt(filename, shuffled_, fmt='%d', delimiter=',')     
+    np.savetxt(filename, shuffled_, fmt='%d', delimiter=',')
+    return shuffled_
 
 def bboxCall(request):
     # download url as a local file

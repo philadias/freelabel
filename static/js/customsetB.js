@@ -13,7 +13,7 @@
     // initialize mouse cursor as pencil by default
     document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";    
 
-    var folderpath = prompt("Path to your dataset", "/home/philipe/Pictures/test3/");
+    var folderpath = prompt("Path to your dataset", "./Spacenet/");
     datasetname = prompt("Name of your dataset", "custom");
 
     // AJAX call to loadlist() in views.py to get list of images, gt, bboxes, categories 
@@ -28,6 +28,7 @@
           username = resp.username;
 
           var lines = resp.imgList;
+          var linesCNN = resp.cnnList;
           var localfolder_ = resp.localFolder;
           var PORT = resp.PORT;
           // var linesGT = resp.gtList;
@@ -35,6 +36,7 @@
           // populate corresponding arrays with info loaded from the .txt files
           for (var j = 0, len = lines.length; j < len; j++) {
             imgArray[j] = "http://0.0.0.0:"+PORT+"/"+lines[j];
+            gtArray[j] = "http://0.0.0.0:"+PORT+"/"+linesCNN[j];
             localPathArray[j] = localfolder_+lines[j];            
           }
 
@@ -199,60 +201,87 @@
           // display image ID in case the user wants to provide some feedback
           document.getElementById("imgId").innerHTML = "Image "+ (i+1)+"/9";
 
-          // get the dimensions of current image to global variables
-          currentHeight = img.clientHeight;
-          currentWidth = img.clientWidth;
-      
-          // set image upper canvas dimensions accordingly
-          canvaso.height = currentHeight;
-          canvaso.width = currentWidth;
+          // replace the mask on bottom canvas with new segmentation mask
+          var pic = gtArray[listIDs[i]];
+          // lastUsrMask = pic;
+          document.getElementById("maskImg").src = pic.replace();
 
-          // draw image on upper canvas with corresponding opacity
-          contexto.clearRect(0,0,currentWidth,currentHeight);
-          contexto.globalAlpha = tran;      
-          contexto.drawImage(img, 0, 0, currentWidth, currentHeight);  
-          contexto.globalAlpha = 1;
+          // wait for the mask to load
+          document.getElementById("maskImg").onload = function() {
+              // get opacity values of mask and image
+              document.getElementById('dtranM').value = 0.5;
+              var tranM = document.getElementById('dtranM').value;
+              var tran = document.getElementById("dtran").value
 
-          // set tracews upper canvas dimensions accordingly
-          temp_canvas.height = currentHeight;
-          temp_canvas.width = currentWidth;
+              // set opacity of bottom mask
+              document.getElementById("maskImg").style.opacity = tranM;
 
-          // pass original image resolution to python
-          var img_size = [currentHeight, currentWidth];
-          
-          // AJAX call to initanns() in views.py, which initializes the array 
-          // that will contain the traces provided by the user for this image        
-          $.ajax({
-            url: '/freelabel/initanns/',
-            type: 'POST',
-            data: {"img_size": img_size},
-            tryCount : 0,
-            retryLimit : 3,
-            success: function(data) {           
-              // initialize scores array, adding 1 to include bkg
-              scores = new Array(2);
+              //call back the img maskImg to normal status
+              document.getElementById("maskImg").style.display = "inline";  //inline is default
 
-              document.body.style.cursor = currentCursor              
+              // get the dimensions of current image to global variables
+              currentHeight = img.clientHeight;
+              currentWidth = img.clientWidth;
 
-              start();
-          },
-          error : function(xhr, textStatus, errorThrown ) {
-              // if (textStatus == 'timeout') {
-              this.tryCount++;
-              if (this.tryCount <= this.retryLimit) {
-                  //try again
-                  $.ajax(this);
-                  return;
-              }     
-              else{
-                alert("Server error, image will be reloaded. That will not affect your records, sorry about the inconvenience.")
-                window.location.reload(); //will automatically refresh until the end
-                return;
-              }                 
+              // set image upper canvas dimensions accordingly
+              canvaso.height = currentHeight;
+              canvaso.width = currentWidth;
 
-          },
-          timeout: 5000
-        });   
+              // draw image on upper canvas with corresponding opacity
+              contexto.clearRect(0, 0, currentWidth, currentHeight);
+              contexto.globalAlpha = tran;
+              contexto.drawImage(img, 0, 0, currentWidth, currentHeight);
+              contexto.globalAlpha = 1;
+
+              // set tracews upper canvas dimensions accordingly
+              temp_canvas.height = currentHeight;
+              temp_canvas.width = currentWidth;
+
+              // display mask from CNN too
+              maskOn = true;
+              var mask = document.getElementById("maskImg");
+
+              contexto.globalAlpha = tranM;
+              contexto.drawImage(mask, 0, 0, currentWidth, currentHeight);
+              contexto.globalAlpha = 1;
+
+
+              // pass original image resolution to python
+              var img_size = [currentHeight, currentWidth];
+
+              // AJAX call to initanns() in views.py, which initializes the array
+              // that will contain the traces provided by the user for this image
+              $.ajax({
+                  url: '/freelabel/initanns/',
+                  type: 'POST',
+                  data: {"img_size": img_size},
+                  tryCount: 0,
+                  retryLimit: 3,
+                  success: function (data) {
+                      // initialize scores array, adding 1 to include bkg
+                      scores = new Array(2);
+
+                      document.body.style.cursor = currentCursor
+
+                      start();
+                  },
+                  error: function (xhr, textStatus, errorThrown) {
+                      // if (textStatus == 'timeout') {
+                      this.tryCount++;
+                      if (this.tryCount <= this.retryLimit) {
+                          //try again
+                          $.ajax(this);
+                          return;
+                      } else {
+                          alert("Server error, image will be reloaded. That will not affect your records, sorry about the inconvenience.")
+                          window.location.reload(); //will automatically refresh until the end
+                          return;
+                      }
+
+                  },
+                  timeout: 5000
+              });
+          }
     }     
   }
 
