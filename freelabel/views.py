@@ -125,7 +125,7 @@ def loadcustom(request):
     # localFolder = '/home/philipe/Pictures/test2/'
     imgList = []
     cnnList = []
-    for it,x in enumerate(glob.glob(localFolder + "*.jpg")):
+    for it,x in enumerate(glob.glob(os.path.join(localFolder,"*.jpg"))):
         imgList.append(os.path.basename(x))
         cnnList.append(imgList[it][0:-4] + ".png")
 
