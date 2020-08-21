@@ -20,7 +20,7 @@ import json
 import urllib.request as ur
 
 from skimage.draw import line
-from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg, loadLocalGT
+from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg
 
 from random import shuffle
 
@@ -79,8 +79,11 @@ def play(request):
 
 ####
 def playCustom(request):    
-    return render(request, 'freelabel/customset.html')        
-  
+    return render(request, 'freelabel/customset.html')
+
+def playCustomScratch(request):
+    return render(request, 'freelabel/customsetScratch.html')
+
 def threadfunction(web_dir):
 
     PORT = 8889
@@ -183,6 +186,9 @@ def refineCustom(request):
 
         username = request.user.username
 
+        # flag indicating if annotation shall be merged with presegmentation
+        mergePreSeg = True if request.POST.get('mergePreSeg') == 'true' else False
+
         # get URL of image
         url = request.POST.get('img')
         # get random ID that defines mask filename
@@ -207,11 +213,8 @@ def refineCustom(request):
         # load detection and uncertainties from local .mat file
         # get URL
         # url = request.POST.get('img')
-        urlGT,_ = os.path.splitext(url)
-        # load .mat info from URL
-        scoremaps,uncMap = loadLocalGT(urlGT+'.mat')
         # call RGR and get mask as return
-        im_color = startRGR(username,img,userAnns,ID,weight_,m,scoremaps,uncMap)
+        im_color = startRGR(username,img,userAnns,ID,weight_,m,url,mergePreSeg)
         askForAnns = False
     else:
         askForAnns = True

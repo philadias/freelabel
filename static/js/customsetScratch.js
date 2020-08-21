@@ -28,7 +28,6 @@
           username = resp.username;
 
           var lines = resp.imgList;
-          var linesCNN = resp.cnnList;
           var localfolder_ = resp.localFolder;
           var PORT = resp.PORT;
           // var linesGT = resp.gtList;
@@ -36,7 +35,6 @@
           // populate corresponding arrays with info loaded from the .txt files
           for (var j = 0, len = lines.length; j < len; j++) {
             imgArray[j] = "http://0.0.0.0:"+PORT+"/"+lines[j];
-            gtArray[j] = "http://0.0.0.0:"+PORT+"/"+linesCNN[j];
             localPathArray[j] = localfolder_+lines[j];            
           }
 
@@ -199,90 +197,62 @@
       // wait for the image to load
       img.onload = function(){
           // display image ID in case the user wants to provide some feedback
-          // alert(imgArray.length)
-          document.getElementById("imgId").innerHTML = "Image "+ (i+1)+"/"+(imgArray.length);
+          document.getElementById("imgId").innerHTML = "Image "+ (i+1)+"/9";
 
-          // replace the mask on bottom canvas with new segmentation mask
-          var pic = gtArray[listIDs[i]];
-          // lastUsrMask = pic;
-          document.getElementById("maskImg").src = pic.replace();
+          // get the dimensions of current image to global variables
+          currentHeight = img.clientHeight;
+          currentWidth = img.clientWidth;
+      
+          // set image upper canvas dimensions accordingly
+          canvaso.height = currentHeight;
+          canvaso.width = currentWidth;
 
-          // wait for the mask to load
-          document.getElementById("maskImg").onload = function() {
-              // get opacity values of mask and image
-              document.getElementById('dtranM').value = 0.5;
-              var tranM = document.getElementById('dtranM').value;
-              var tran = document.getElementById("dtran").value
+          // draw image on upper canvas with corresponding opacity
+          contexto.clearRect(0,0,currentWidth,currentHeight);
+          contexto.globalAlpha = tran;      
+          contexto.drawImage(img, 0, 0, currentWidth, currentHeight);  
+          contexto.globalAlpha = 1;
 
-              // set opacity of bottom mask
-              document.getElementById("maskImg").style.opacity = tranM;
+          // set tracews upper canvas dimensions accordingly
+          temp_canvas.height = currentHeight;
+          temp_canvas.width = currentWidth;
 
-              //call back the img maskImg to normal status
-              document.getElementById("maskImg").style.display = "inline";  //inline is default
+          // pass original image resolution to python
+          var img_size = [currentHeight, currentWidth];
+          
+          // AJAX call to initanns() in views.py, which initializes the array 
+          // that will contain the traces provided by the user for this image        
+          $.ajax({
+            url: '/freelabel/initanns/',
+            type: 'POST',
+            data: {"img_size": img_size},
+            tryCount : 0,
+            retryLimit : 3,
+            success: function(data) {           
+              // initialize scores array, adding 1 to include bkg
+              scores = new Array(2);
 
-              // get the dimensions of current image to global variables
-              currentHeight = img.clientHeight;
-              currentWidth = img.clientWidth;
+              document.body.style.cursor = currentCursor              
 
-              // set image upper canvas dimensions accordingly
-              canvaso.height = currentHeight;
-              canvaso.width = currentWidth;
+              start();
+          },
+          error : function(xhr, textStatus, errorThrown ) {
+              // if (textStatus == 'timeout') {
+              this.tryCount++;
+              if (this.tryCount <= this.retryLimit) {
+                  //try again
+                  $.ajax(this);
+                  return;
+              }     
+              else{
+                alert("Server error, image will be reloaded. That will not affect your records, sorry about the inconvenience.")
+                window.location.reload(); //will automatically refresh until the end
+                return;
+              }                 
 
-              // draw image on upper canvas with corresponding opacity
-              contexto.clearRect(0, 0, currentWidth, currentHeight);
-              contexto.globalAlpha = tran;
-              contexto.drawImage(img, 0, 0, currentWidth, currentHeight);
-              contexto.globalAlpha = 1;
-
-              // set tracews upper canvas dimensions accordingly
-              temp_canvas.height = currentHeight;
-              temp_canvas.width = currentWidth;
-
-              // display mask from CNN too
-              maskOn = true;
-              var mask = document.getElementById("maskImg");
-
-              contexto.globalAlpha = tranM;
-              contexto.drawImage(mask, 0, 0, currentWidth, currentHeight);
-              contexto.globalAlpha = 1;
-
-
-              // pass original image resolution to python
-              var img_size = [currentHeight, currentWidth];
-
-              // AJAX call to initanns() in views.py, which initializes the array
-              // that will contain the traces provided by the user for this image
-              $.ajax({
-                  url: '/freelabel/initanns/',
-                  type: 'POST',
-                  data: {"img_size": img_size},
-                  tryCount: 0,
-                  retryLimit: 3,
-                  success: function (data) {
-                      // initialize scores array, adding 1 to include bkg
-                      scores = new Array(2);
-
-                      document.body.style.cursor = currentCursor
-
-                      start();
-                  },
-                  error: function (xhr, textStatus, errorThrown) {
-                      // if (textStatus == 'timeout') {
-                      this.tryCount++;
-                      if (this.tryCount <= this.retryLimit) {
-                          //try again
-                          $.ajax(this);
-                          return;
-                      } else {
-                          alert("Server error, image will be reloaded. That will not affect your records, sorry about the inconvenience.")
-                          window.location.reload(); //will automatically refresh until the end
-                          return;
-                      }
-
-                  },
-                  timeout: 5000
-              });
-          }
+          },
+          timeout: 5000
+        });   
     }     
   }
 
@@ -327,7 +297,7 @@
         $.ajax({
           url: '/freelabel/refineCustom/',
           type: 'POST',
-          data: {"img": imgURL, "ID": ID, "img_size": img_size, "weight": weight_, "m": m_,'trace': traces,'mergePreSeg': true},
+          data: {"img": imgURL, "ID": ID, "img_size": img_size, "weight": weight_, "m": m_,'trace': traces,'mergePreSeg': false},
           tryCount : 0,
           retryLimit : 3,    
           timeout: 50000,      

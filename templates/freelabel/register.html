@@ -11,14 +11,14 @@
         <h3>FreeLabel annotation tool </h3> 
 
         {% if user.is_authenticated %}
-            <h3> Hello {{ user.username }}!</h3>        
-           
-            <h2>First time around? Please do the training session <br />(it takes less than 10min)! </h2>        
-            <a href="/freelabel/train/">Training</a><br />
-            
+            <h3> Hello {{ user.username }}!</h3>
 
-            <h2>Select your custom dataset</h2>
-            <a href="/freelabel/playCustom/">Annotate your dataset</a><br />
+            <h2>Annotate a custom dataset (e.g. SpaceNet) </h2>
+            <a href="/freelabel/playCustom/">From pre-computed segmentations</a><br />
+            <a href="/freelabel/playCustomScratch/">From scratch</a><br />
+
+            <h2> (From WACV version) First time around? Please do the training session <br />(it takes less than 10min)! </h2>
+            <a href="/freelabel/train/">Training</a><br />
 
             <h2> (From WACV version) Already experienced? Go ahead and play </h2>
             <a href="/freelabel/play/">Play!</a></br>

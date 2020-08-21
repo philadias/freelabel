@@ -29,6 +29,8 @@ urlpatterns = [
 
     path('playCustom/', views.playCustom, name='playCustom'),
     path('playCustom/loadcustom/', views.loadcustom, name='loadcustom'),
+    path('playCustomScratch/', views.playCustomScratch, name='playCustom'),
+    path('playCustomScratch/loadcustom/', views.loadcustom, name='loadcustom'),
     path('refineCustom/', views.refineCustom, name='refineCustom'),
     path('getfolder/', views.setcustomfolder, name='getfolder'),
     path('playCustom/writeCustomLog/', views.writeCustomLog, name='writeCustomLog'),

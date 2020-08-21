@@ -6,6 +6,7 @@ from distutils.core import setup, Extension
 import cv2 as cv
 import numpy as np
 
+import os
 import scipy.io as sio
 import numpy.matlib as npm
 
@@ -75,7 +76,7 @@ def regGrowing(rng,area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_
 
     return_dict[itSet] = clsScores
 ########
-def main(username,img,anns,weight_,m,scoremaps,uncMap):
+def main(username,img,anns,weight_,m,url,mergePreSeg):
 
     # get image size, basically height and width
     t1 = time.time()
@@ -85,8 +86,6 @@ def main(username,img,anns,weight_,m,scoremaps,uncMap):
 
     if(widthAnns != width):
         img = cv.resize(img, (widthAnns, heightAnns))
-        scoremaps = cv.resize(scoremaps, (widthAnns, heightAnns))
-        uncMap = cv.resize(uncMap, (widthAnns, heightAnns))
 
     height, width, channels = img.shape
 
@@ -182,16 +181,28 @@ def main(username,img,anns,weight_,m,scoremaps,uncMap):
     # **INCORPORATING PRE-SEGMENTATIONS
     # scoremaps =
     # sio.savemat('pairs%d.mat' % itSet, mdict={'ref_M':ref_M,'scoremaps':scoremaps,'uncMap':uncMap})
-    w_ = 50
-    adjAnns = 1-(1/np.exp(ref_M*w_*5))
-    weightAnns = np.repeat(np.max(adjAnns,axis=2)[:, :, np.newaxis],2,axis=2)
+    if mergePreSeg == True:
+        w_ = 50
 
-    adjUncMap = np.divide(1,np.exp(uncMap*w_*0.5))
-    weightMap = np.repeat(adjUncMap[:, :, np.newaxis],2,axis=2)
+        urlGT,_ = os.path.splitext(url)
+        # load .mat info from URL
+        scoremaps,uncMap = loadLocalGT(urlGT+'.mat')
+        heightS, widthS, _ = scoremaps.shape
+        if (widthAnns != widthS):
+            scoremaps = cv.resize(scoremaps, (widthAnns, heightAnns))
+            uncMap = cv.resize(uncMap, (widthAnns, heightAnns))
 
-    avgMap = np.divide(np.multiply(scoremaps,weightMap)+np.multiply(adjAnns,weightAnns),weightAnns+weightMap)
-    # sio.savemat('pairs%d.mat' % itSet, mdict={'adjUncMap':adjUncMap,'adjAnns':adjAnns,'weightAnns':weightAnns,'ref_M':ref_M,'scoremaps':scoremaps,'uncMap':uncMap,'avgMap':avgMap,'weightMap':weightMap})
-    # maximum likelihood across refined classes scores ref_M
+        adjAnns = 1-(1/np.exp(ref_M*w_*5))
+        weightAnns = np.repeat(np.max(adjAnns,axis=2)[:, :, np.newaxis],2,axis=2)
+
+        adjUncMap = np.divide(1,np.exp(uncMap*w_*0.5))
+        weightMap = np.repeat(adjUncMap[:, :, np.newaxis],2,axis=2)
+
+        avgMap = np.divide(np.multiply(scoremaps,weightMap)+np.multiply(adjAnns,weightAnns),weightAnns+weightMap)
+        # sio.savemat('pairs%d.mat' % itSet, mdict={'adjUncMap':adjUncMap,'adjAnns':adjAnns,'weightAnns':weightAnns,'ref_M':ref_M,'scoremaps':scoremaps,'uncMap':uncMap,'avgMap':avgMap,'weightMap':weightMap})
+        # maximum likelihood across refined classes scores ref_M
+    else:
+        avgMap = ref_M
     maxScores = np.amax(avgMap,axis=2)
     maxClasses = np.argmax(avgMap,axis=2)
 
@@ -218,10 +229,10 @@ def main(username,img,anns,weight_,m,scoremaps,uncMap):
 
     return im_color
 
-def startRGR(username,img,userAnns,cnt,weight_,m,scoremaps,uncMap):
+def startRGR(username,img,userAnns,cnt,weight_,m,url,mergePreSeg):
 
     # img = cv.imdecode(imgnp, cv.IMREAD_COLOR)
-    im_color = main(username,img,userAnns,weight_,m,scoremaps,uncMap)
+    im_color = main(username,img,userAnns,weight_,m,url,mergePreSeg)
     print("### SAVING ###")
 
     cv.imwrite('static/'+username+'/refined'+str(cnt)+'.png', im_color)
