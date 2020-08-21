@@ -77,7 +77,6 @@ def regGrowing(rng,area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_
     return_dict[itSet] = clsScores
 ########
 def main(username,img,anns,weight_,m,url,mergePreSeg):
-
     # get image size, basically height and width
     t1 = time.time()
     
@@ -225,7 +224,6 @@ def main(username,img,anns,weight_,m,url,mergePreSeg):
     b, g, r = cv.split(im_color)
     rgba = [b,g,r, alpha]
     im_color = cv.merge(rgba,4) 
-    print("### DONE HERE ###")
 
     return im_color
 
@@ -233,10 +231,7 @@ def startRGR(username,img,userAnns,cnt,weight_,m,url,mergePreSeg):
 
     # img = cv.imdecode(imgnp, cv.IMREAD_COLOR)
     im_color = main(username,img,userAnns,weight_,m,url,mergePreSeg)
-    print("### SAVING ###")
-
     cv.imwrite('static/'+username+'/refined'+str(cnt)+'.png', im_color)
-    print("### DONE ###")
 
 def traceLine(img,r0,c0,r1,c1,catId,thick):
     cv.line(img,(c0,r0),(c1,r1),catId,thick)
@@ -277,7 +272,6 @@ def readLocalImg(filename):
 
 
 def loadLocalGT(filename):
-    print(filename)
     matvar = sio.loadmat(filename)
     softScores = np.asarray(matvar['softScores'],dtype=float)
     uncMap = np.asarray(matvar['detUncMap'], dtype=float)
@@ -288,7 +282,6 @@ def loadLocalGT(filename):
 
     # maxScores = np.max(softScores,dim=2)
     # cnnMask = np.amax(softScores, dim=2)
-    print("loaded fine")
     return softScores,uncMap
 
 def cmpToGT(username):

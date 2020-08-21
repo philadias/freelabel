@@ -146,7 +146,6 @@ def loadcustom(request):
     # check if there is already a sequence of images for this user.
     # If not, creates one
     filename = 'static/lists/imgs_' + setname + '_' + username + '.txt'
-    print(filename)
     if not os.path.exists(filename):
         shuffledIds = shuffleList(filename,len(imgList))
         # cnnList = cnnList[shuffledIds]
@@ -162,10 +161,8 @@ def loadcustom(request):
     else:          
         info = np.loadtxt(filename)   
         nextId = int(info)
-    print(nextId)
     # to append bar if needed
     localFolder = os.path.join(localFolder,"")
-    print(localFolder)
     return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'cnnList': cnnList,'catList':catList,'idsList': idsList,'username': username,'nextId':nextId,'localFolder':localFolder}), content_type="application/json")
 
 def refineCustom(request): 
@@ -186,7 +183,6 @@ def refineCustom(request):
     numCls = clsList.size # number of classes
 
     if numCls > 1:
-
         username = request.user.username
 
         # flag indicating if annotation shall be merged with presegmentation
@@ -194,6 +190,7 @@ def refineCustom(request):
 
         # get URL of image
         url = request.POST.get('img')
+
         # get random ID that defines mask filename
         ID = request.POST.get('ID')
         # weight of traces, which defines the spacing between samples in RGR
@@ -209,7 +206,6 @@ def refineCustom(request):
 
         # open image URL
         img = readLocalImg(url)
-        print(url)
         # download image and convert to numpy array
         img = np.asarray(img, dtype="uint8")
 
