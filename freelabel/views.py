@@ -157,6 +157,8 @@ def loadcustom(request):
         info = np.loadtxt(filename)   
         nextId = int(info)
     print(nextId)
+    # to append bar if needed
+    localFolder = os.path.join(localFolder,"")
     print(localFolder)
     return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'cnnList': cnnList,'catList':catList,'idsList': idsList,'username': username,'nextId':nextId,'localFolder':localFolder}), content_type="application/json")
 
@@ -215,7 +217,6 @@ def refineCustom(request):
         askForAnns = True
 
     request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
-    print(askForAnns)
     # return render(request, 'freelabel/main.html')
     return HttpResponse(json.dumps({'askForAnns': askForAnns}), content_type="application/json")
 
