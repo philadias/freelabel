@@ -136,9 +136,12 @@ def loadcustom(request):
     print(imgList)
 
     # load text file with list of categories in the dataset
-    f = open(os.path.join(localFolder,'categories.txt'), 'r')
-    catList = f.readlines()
-    f.close()
+    if os.path.exists(os.path.join(localFolder,'categories.txt')):
+        f = open(os.path.join(localFolder,'categories.txt'), 'r')
+        catList = f.readlines()
+        f.close()
+    else:
+        catList = ['background','Building']
 
     # check if there is already a sequence of images for this user.
     # If not, creates one

@@ -197,7 +197,7 @@
       // wait for the image to load
       img.onload = function(){
           // display image ID in case the user wants to provide some feedback
-          document.getElementById("imgId").innerHTML = "Image "+ (i+1)+"/9";
+          document.getElementById("imgId").innerHTML = "Image "+ (i+1)+"/"+(imgArray.length);
 
           // get the dimensions of current image to global variables
           currentHeight = img.clientHeight;
