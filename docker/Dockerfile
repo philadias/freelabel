@@ -33,3 +33,5 @@ RUN echo "Compile RGR..." && cd freelabel && \
 	python3 setup.py build_ext --inplace
 
 WORKDIR /
+RUN echo "**** FOLLOW INSTRUCTIONS FROM README_Instructions.md TO START INTERFACE (printed below) *****" 
+RUN cat /opt/freelabel/docker/README_Instructions.md
