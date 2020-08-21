@@ -2,7 +2,7 @@
 sudo docker build -t freelabel-docker .
 
 # Enter container with support to access webpage through localhost
-sudo docker run --network="host" -it
+sudo docker run --network="host" -it freelabel-docker
 ** To use a local folder within the interface, add the flag: -v /your/source/folder/:/folder/in/docker/
 
 # Navigate to folder containing Freelabel
