@@ -171,41 +171,53 @@ def refineCustom(request):
 
     userAnns = drawTrace(userAnns,traces)
 
-    username = request.user.username
+    # check if both classes have been annotated
+    # list of annotated classes
+    clsList = np.unique(userAnns)
+    clsList = np.delete(clsList,0) # remove class 0
+    numCls = clsList.size # number of classes
 
-    # get URL of image
-    url = request.POST.get('img')
-    # get random ID that defines mask filename
-    ID = request.POST.get('ID')
-    # weight of traces, which defines the spacing between samples in RGR
-    weight_ = int(request.POST.get('weight'))
+    if numCls > 1:
 
-    # theta_m: regulates weight of color-similarity vs spatial-proximity
-    # divide by to adjust from [1,10] to [.1,1] 
-    m = float(request.POST.get('m'))/10
+        username = request.user.username
 
-    # remove older files
-    for filename in glob.glob("static/"+username+"/refined*"):
-        os.remove(filename) 
+        # get URL of image
+        url = request.POST.get('img')
+        # get random ID that defines mask filename
+        ID = request.POST.get('ID')
+        # weight of traces, which defines the spacing between samples in RGR
+        weight_ = int(request.POST.get('weight'))
 
-    # open image URL
-    img = readLocalImg(url)
-    print(url)
-    # download image and convert to numpy array
-    img = np.asarray(img, dtype="uint8")    
+        # theta_m: regulates weight of color-similarity vs spatial-proximity
+        # divide by to adjust from [1,10] to [.1,1]
+        m = float(request.POST.get('m'))/10
 
-    # load detection and uncertainties from local .mat file
-    # get URL
-    # url = request.POST.get('img')
-    urlGT,_ = os.path.splitext(url)
-    # load .mat info from URL
-    scoremaps,uncMap = loadLocalGT(urlGT+'.mat')
-    # call RGR and get mask as return 
-    im_color = startRGR(username,img,userAnns,ID,weight_,m,scoremaps,uncMap)
+        # remove older files
+        for filename in glob.glob("static/"+username+"/refined*"):
+            os.remove(filename)
+
+        # open image URL
+        img = readLocalImg(url)
+        print(url)
+        # download image and convert to numpy array
+        img = np.asarray(img, dtype="uint8")
+
+        # load detection and uncertainties from local .mat file
+        # get URL
+        # url = request.POST.get('img')
+        urlGT,_ = os.path.splitext(url)
+        # load .mat info from URL
+        scoremaps,uncMap = loadLocalGT(urlGT+'.mat')
+        # call RGR and get mask as return
+        im_color = startRGR(username,img,userAnns,ID,weight_,m,scoremaps,uncMap)
+        askForAnns = False
+    else:
+        askForAnns = True
 
     request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
-
-    return render(request, 'freelabel/main.html')
+    print(askForAnns)
+    # return render(request, 'freelabel/main.html')
+    return HttpResponse(json.dumps({'askForAnns': askForAnns}), content_type="application/json")
 
 def writeCustomLog(request):
 

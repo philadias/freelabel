@@ -24,11 +24,12 @@ import pickle
 
 #####
 
-def regGrowing(area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet):
+def regGrowing(rng,area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet):
     # h is the index o pixels p_h within R_H. We randomly sample seeds
     # according to h~U(1,|R_H|)
     # round down + Uniform distribution
-    h = np.floor(area * np.random.random((area,)))
+    np.random.seed(itSet)
+    h = np.floor(area * rng.random(size=area))
     h = h.astype(np.int64)
  
     # s is the index of each seed for current region growing step
@@ -155,9 +156,11 @@ def main(username,img,anns,weight_,m,scoremaps,uncMap):
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
 
+    rng = np.random.default_rng()
+
     jobs = []
     for itSet in range(0, numSets):
-        p = multiprocessing.Process(target=regGrowing, args=(area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet))
+        p = multiprocessing.Process(target=regGrowing, args=(rng,area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet))
         jobs.append(p)
         p.start()
 
@@ -180,10 +183,10 @@ def main(username,img,anns,weight_,m,scoremaps,uncMap):
     # scoremaps =
     # sio.savemat('pairs%d.mat' % itSet, mdict={'ref_M':ref_M,'scoremaps':scoremaps,'uncMap':uncMap})
     w_ = 50
-    adjAnns = 1-(1/np.exp(ref_M*w_))
+    adjAnns = 1-(1/np.exp(ref_M*w_*5))
     weightAnns = np.repeat(np.max(adjAnns,axis=2)[:, :, np.newaxis],2,axis=2)
 
-    adjUncMap = np.divide(1,np.exp(uncMap*w_))
+    adjUncMap = np.divide(1,np.exp(uncMap*w_*0.5))
     weightMap = np.repeat(adjUncMap[:, :, np.newaxis],2,axis=2)
 
     avgMap = np.divide(np.multiply(scoremaps,weightMap)+np.multiply(adjAnns,weightAnns),weightAnns+weightMap)

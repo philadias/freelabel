@@ -199,7 +199,8 @@
       // wait for the image to load
       img.onload = function(){
           // display image ID in case the user wants to provide some feedback
-          document.getElementById("imgId").innerHTML = "Image "+ (i+1)+"/9";
+          // alert(imgArray.length)
+          document.getElementById("imgId").innerHTML = "Image "+ (i+1)+"/"+(imgArray.length);
 
           // replace the mask on bottom canvas with new segmentation mask
           var pic = gtArray[listIDs[i]];
@@ -330,56 +331,66 @@
           tryCount : 0,
           retryLimit : 3,    
           timeout: 50000,      
-          success: function(data){
-       
-              traces = new Array();
+          success: function(resp){
+              askForAnns = resp.askForAnns;
+              if(askForAnns)
+              {
+                  // mouse cursor back to the corresponding tool icon
+                  document.body.style.cursor = currentCursor;
+                  document.getElementById("loadingIcon").style.display = "none";
+                  document.getElementById("btnRefine").style.visibility = "visible"
+                  alert('Please annotate at least 2 categories')
+              }
+              else{
+                  traces = new Array();
 
-              // replace the mask on bottom canvas with new segmentation mask
-              var pic = '/static/'+username+'/refined'+ID+'.png'
-              lastUsrMask = pic;
-              document.getElementById("maskImg").src = pic.replace();
+                  // replace the mask on bottom canvas with new segmentation mask
+                  var pic = '/static/'+username+'/refined'+ID+'.png'
+                  lastUsrMask = pic;
+                  document.getElementById("maskImg").src = pic.replace();
 
-              // wait for the mask to load
-              document.getElementById("maskImg").onload = function(){
-                // get opacity values of mask and image
-                document.getElementById('dtranM').value = 0.5;                
-                var tranM = document.getElementById('dtranM').value;
-                var tran = document.getElementById("dtran").value
+                  // wait for the mask to load
+                  document.getElementById("maskImg").onload = function(){
+                    // get opacity values of mask and image
+                    document.getElementById('dtranM').value = 0.5;
+                    var tranM = document.getElementById('dtranM').value;
+                    var tran = document.getElementById("dtran").value
 
-                // set opacity of bottom mask
-                document.getElementById("maskImg").style.opacity = tranM;
+                    // set opacity of bottom mask
+                    document.getElementById("maskImg").style.opacity = tranM;
 
-                //after refine button, call back the img maskImg to normal status
-                document.getElementById("maskImg").style.display = "inline";  //inline is default
+                    //after refine button, call back the img maskImg to normal status
+                    document.getElementById("maskImg").style.display = "inline";  //inline is default
 
-                // update the upper canvas with image
-                contexto.clearRect(0,0,currentWidth,currentHeight);
-                contexto.globalAlpha = tran;
-                contexto.drawImage(img, 0, 0, currentWidth, currentHeight);
-                contexto.globalAlpha = 1;
-                // draw bboxes on image
-                drawBoundingBox()
+                    // update the upper canvas with image
+                    contexto.clearRect(0,0,currentWidth,currentHeight);
+                    contexto.globalAlpha = tran;
+                    contexto.drawImage(img, 0, 0, currentWidth, currentHeight);
+                    contexto.globalAlpha = 1;
+                    // draw bboxes on image
+                    drawBoundingBox()
 
-                // if the mask toggle is ON, overlay mask on the upper canvas
-                if (!maskOn)
-                    maskOn = true;
-                var mask = document.getElementById("maskImg");
+                    // if the mask toggle is ON, overlay mask on the upper canvas
+                    if (!maskOn)
+                        maskOn = true;
+                    var mask = document.getElementById("maskImg");
 
-                contexto.globalAlpha = tranM;
-                contexto.drawImage(mask, 0, 0, currentWidth, currentHeight);
-                contexto.globalAlpha = 1;
+                    contexto.globalAlpha = tranM;
+                    contexto.drawImage(mask, 0, 0, currentWidth, currentHeight);
+                    contexto.globalAlpha = 1;
 
-                // mouse cursor back to the corresponding tool icon
-                document.body.style.cursor = currentCursor;
-                // hide "Refining.." icon
-                document.getElementById("loadingIcon").style.display = "none";
-                document.getElementById("btnRefine").style.visibility = "visible"
+                    // mouse cursor back to the corresponding tool icon
+                    document.body.style.cursor = currentCursor;
+                    // hide "Refining.." icon
+                    document.getElementById("loadingIcon").style.display = "none";
+                    document.getElementById("btnRefine").style.visibility = "visible"
 
-                // compute accuracies for datasets with GT available
-                if(datasetGT)                  
-                  comparetoGT()
-                //without our calling, do nothing
-                document.getElementById("maskImg").onload = function(){}
+                    // compute accuracies for datasets with GT available
+                    if(datasetGT)
+                      comparetoGT()
+                    //without our calling, do nothing
+                    document.getElementById("maskImg").onload = function(){}
+                  }
               }
             },
             error : function(xhr, textStatus, errorThrown ) {
