@@ -70,8 +70,8 @@ def regGrowing(rng,area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_
     clsScores = np.hsplit(means_,numCls)
     # np.save('PsiMap%d.npy'%itSet,PsiMap)
     # sio.savemat('clsMap%d.mat' % itSet, mdict={'clsScores':clsScores,'means_':means_})
-    clsScores = np.reshape(clsScores,(numCls,height,width),order='C')
-    clsScores = np.swapaxes(clsScores,0,2)
+    clsScores = np.reshape(clsScores,(numCls,height,width),order='F')
+    clsScores = np.moveaxis(clsScores,0,-1)
  
 
     return_dict[itSet] = clsScores
@@ -180,6 +180,7 @@ def main(username,img,anns,weight_,m,url,mergePreSeg):
     # **INCORPORATING PRE-SEGMENTATIONS
     # scoremaps =
     # sio.savemat('pairs%d.mat' % itSet, mdict={'ref_M':ref_M,'scoremaps':scoremaps,'uncMap':uncMap})
+    print(mergePreSeg)
     if mergePreSeg == True:
         w_ = 50
 
@@ -202,6 +203,7 @@ def main(username,img,anns,weight_,m,url,mergePreSeg):
         # maximum likelihood across refined classes scores ref_M
     else:
         avgMap = ref_M
+    sio.savemat('testrefm.mat', mdict={'outputPar':outputPar})
     maxScores = np.amax(avgMap,axis=2)
     maxClasses = np.argmax(avgMap,axis=2)
 
