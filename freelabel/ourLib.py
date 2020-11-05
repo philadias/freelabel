@@ -203,7 +203,7 @@ def main(username,img,anns,weight_,m,url,mergePreSeg):
         # maximum likelihood across refined classes scores ref_M
     else:
         avgMap = ref_M
-    sio.savemat('testrefm.mat', mdict={'outputPar':outputPar})
+    # sio.savemat('testrefm.mat', mdict={'outputPar':outputPar})
     maxScores = np.amax(avgMap,axis=2)
     maxClasses = np.argmax(avgMap,axis=2)
 
