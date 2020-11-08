@@ -246,6 +246,20 @@ def tracePolyline(img,pts,catId,thick):
    
     return img
 
+def traceCircle(img,pts,catId):
+    # thickness = -1 indicates the circle should be filled
+    initX,initY = np.int32(pts[0])
+    x, y = pts[1]
+
+    radius = round(((x - initX) ** 2 + (y - initY) ** 2) ** 0.5)
+    print(type(initX))
+    print(type(np.int32(radius)))
+    cv.circle(img,(initX,initY),np.int32(radius),catId,-1)
+
+    sio.savemat('checkCircle.mat',mdict={'img':img})
+
+    return img
+
 def saveGTasImg(username,id_):
     # load PASCAL colormap in CV format
     lut = np.load('static/images/PASCALlutW.npy')

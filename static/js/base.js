@@ -635,6 +635,8 @@
       document.body.style.cursor = "url('/static/images/eraser"+document.getElementById('dsize').value+".png') 0 0, default";
       else if(document.getElementById("dtool").value == "line")
         document.body.style.cursor = "url('/static/images/line"+document.getElementById('dsize').value+".png') 0 0, default";
+        else if(document.getElementById("dtool").value == "circle")
+          document.body.style.cursor = "url('/static/images/circle"+document.getElementById('dsize').value+".png') 0 0, default";
 
 
     document.getElementById("dsize").blur();
@@ -1091,12 +1093,12 @@
     this.started = false;
     var clicked = false;
 
-    var x,y; // current mouse coordinates
-    var initX,initY; // initial mouse coordinates for this line
+    var x, y; // current mouse coordinates
+    var initX, initY; // initial mouse coordinates for this line
 
     // change mouse icon to line tool
     // document.body.style.cursor = "crosshair";
-    document.body.style.cursor = "url('/static/images/line"+document.getElementById('dsize').value+".png') 0 0, default";
+    document.body.style.cursor = "url('/static/images/line" + document.getElementById('dsize').value + ".png') 0 0, default";
 
     // the mouse events are trickier for this tool, since we
     function mouseOut() {
@@ -1107,20 +1109,21 @@
       thick = temp_context.lineWidth;
       var z = document.getElementById('dcolor').value;
 
-      trace.push(x,y,thick,z);
-            //pushUndo(trace)
+      trace.push(x, y, thick, z);
+      //pushUndo(trace)
 
       traces.push(trace.toString())
       document.getElementById("btnUndo").style.visibility = "visible";
 
       img_update();
-      document.getElementById("imageTemp").ontouchleave = function(){}
+      document.getElementById("imageTemp").ontouchleave = function () {
+      }
     }
 
     // This is called when you start holding down the touch.
     // This starts the pencil drawing.
     this.touchstart = function (ev) {
-      trace = [];  
+      trace = [];
       // this prevents the page to scroll while drawing on temp_canvas
       if (ev.target == temp_canvas) {
         ev.preventDefault();
@@ -1131,7 +1134,7 @@
 
       tool.started = true;
 
-      temp_context.globalCompositeOperation="source-over";
+      temp_context.globalCompositeOperation = "source-over";
 
       color_choose();
       size_choose();
@@ -1142,7 +1145,7 @@
 
       // add the corresponding (coordinates,thickness,category) to variable that
       // will be passed to python to update the actual python array of traces
-      trace.push(ev._x,ev._y,thick,z);
+      trace.push(ev._x, ev._y, thick, z);
 
       initX = ev._x;
       initY = ev._y;
@@ -1150,8 +1153,8 @@
       cpyCtx = temp_context.getImageData(0, 0, temp_context.canvas.width, temp_context.canvas.height);
 
       // mouse out is triggered when clicked, so we use clicked to double check
-      document.getElementById("imageTemp").onmouseout = function(){
-        if (tool.started && clicked == true){
+      document.getElementById("imageTemp").onmouseout = function () {
+        if (tool.started && clicked == true) {
           clicked = false;
           mouseOut()
         }
@@ -1170,7 +1173,7 @@
 
       tool.started = true;
 
-      temp_context.globalCompositeOperation="source-over";
+      temp_context.globalCompositeOperation = "source-over";
 
       color_choose();
       size_choose();
@@ -1180,14 +1183,14 @@
       // add the corresponding (coordinates,thickness,category) to variable that
       // will be passed to python to update the actual python array of traces
       thick = temp_context.lineWidth;
-      trace.push(ev._x,ev._y,thick,z);
+      trace.push(ev._x, ev._y, thick, z);
 
       initX = ev._x;
       initY = ev._y;
 
       // mouse out is triggered when clicked, so we use clicked to double check
-      document.getElementById("imageTemp").onmouseout = function(){
-        if (tool.started && clicked == true){
+      document.getElementById("imageTemp").onmouseout = function () {
+        if (tool.started && clicked == true) {
           mouseOut()
           clicked = false;
         }
@@ -1258,8 +1261,8 @@
 
         // add the corresponding (coordinates,thickness,category) to variable that
         // will be passed to python to update the actual python array of traces
-        trace.push(ev._x,ev._y,thick,z);
-                //pushUndo(trace)
+        trace.push(ev._x, ev._y, thick, z);
+        //pushUndo(trace)
 
         traces.push(trace.toString())
         document.getElementById("btnUndo").style.visibility = "visible";
@@ -1284,12 +1287,221 @@
 
         // add the corresponding (coordinates,thickness,category) to variable that
         // will be passed to python to update the actual python array of traces
-        trace.push(ev._x,ev._y,thick,z);
+        trace.push(ev._x, ev._y, thick, z);
 
         //pushUndo(trace)
 
         traces.push(trace.toString())
-                // hide Undo button and reactivate it only if traces.length > 0 
+        // hide Undo button and reactivate it only if traces.length > 0
+        document.getElementById("btnUndo").style.visibility = "visible";
+
+        img_update();
+      }
+    };
+  }
+  // circle tool
+  tools.circle = function () {
+    var tool = this;
+    this.started = false;
+    var clicked = false;
+
+    var x,y; // current mouse coordinates
+    var initX,initY; // initial mouse coordinates for this circle
+
+    // change mouse icon to circle tool
+    // document.body.style.cursor = "crosshair";
+    document.body.style.cursor = "url('/static/images/circle"+document.getElementById('dsize').value+".png') 0 0, default";
+
+    // the mouse events are trickier for this tool, since we
+    function mouseOut() {
+      tool.started = false;
+      clicked = false;
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      thick = -1;
+      var z = document.getElementById('dcolor').value;
+
+      trace.push(x,y,thick,z);
+            //pushUndo(trace)
+
+      traces.push(trace.toString())
+      document.getElementById("btnUndo").style.visibility = "visible";
+
+      img_update();
+      document.getElementById("imageTemp").ontouchleave = function(){}
+    }
+
+    // This is called when you start holding down the touch.
+    // This starts the pencil drawing.
+    this.touchstart = function (ev) {
+      trace = [];
+      // this prevents the page to scroll while drawing on temp_canvas
+      if (ev.target == temp_canvas) {
+        ev.preventDefault();
+      }
+
+      x = ev._x+30;
+      y = ev._y+30;
+
+      tool.started = true;
+
+      temp_context.globalCompositeOperation="source-over";
+
+      color_choose();
+      size_choose();
+
+      var z = document.getElementById('dcolor').value;
+
+      thick = -1;
+
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      trace.push(ev._x+30,ev._y+30,thick,z);
+
+      initX = ev._x+30;
+      initY = ev._y+30;
+
+      cpyCtx = temp_context.getImageData(0, 0, temp_context.canvas.width, temp_context.canvas.height);
+
+      // mouse out is triggered when clicked, so we use clicked to double check
+      document.getElementById("imageTemp").onmouseout = function(){
+        if (tool.started && clicked == true){
+          clicked = false;
+          mouseOut()
+        }
+      };
+
+    };
+
+    this.mousedown = function (ev) {
+      trace = [];
+      cpyCtx = temp_context.getImageData(0, 0, temp_canvas.width, temp_canvas.height);
+
+      clicked = true
+
+      x = ev._x+30;
+      y = ev._y+30;
+
+      tool.started = true;
+
+      temp_context.globalCompositeOperation="source-over";
+
+      color_choose();
+      size_choose();
+
+      var z = document.getElementById('dcolor').value;
+
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      thick = -1;
+      trace.push(ev._x+30,ev._y+30,thick,z);
+
+      initX = ev._x+30;
+      initY = ev._y+30;
+
+      // mouse out is triggered when clicked, so we use clicked to double check
+      document.getElementById("imageTemp").onmouseout = function(){
+        if (tool.started && clicked == true){
+          mouseOut()
+          clicked = false;
+        }
+      };
+    };
+
+    this.touchmove = function (ev) {
+
+      if (tool.started) {
+        // this prevents the page to scroll while drawing on temp_canvas
+        if (ev.target == temp_canvas) {
+          ev.preventDefault();
+        }
+
+        x = ev._x+30;
+        y = ev._y+30;
+
+        var z = document.getElementById('dcolor').value;
+        temp_context.putImageData(cpyCtx, 0, 0);
+
+        temp_context.beginPath();
+        var radius = ((x-initX)**2 +(y-initY)**2)**0.5;
+        temp_context.arc(initX, initY, radius, 0, 2 * Math.PI);
+        temp_context.stroke();
+
+        img_update();
+      }
+    };
+
+    this.mousemove = function (ev) {
+      if (tool.started) {
+
+        x = ev._x+30;
+        y = ev._y+30;
+
+        var z = document.getElementById('dcolor').value;
+        // alert(initX)
+        temp_context.putImageData(cpyCtx, 0, 0);
+
+        temp_context.beginPath();
+        var radius = ((x-initX)**2 +(y-initY)**2)**0.5;
+        temp_context.arc(initX, initY, radius, 0, 2 * Math.PI);
+        temp_context.stroke();
+
+        img_update();
+
+      }
+    };
+
+    // This is called when you release the touch button.
+    this.touchend = function (ev) {
+      if (tool.started) {
+        // this prevents the page to scroll while drawing on temp_canvas
+        if (ev.target == temp_canvas) {
+          ev.preventDefault();
+        }
+
+        var z = document.getElementById('dcolor').value;
+
+        // tool.mousemove(ev);
+        tool.started = false;
+
+        x = ev._x+30;
+        y = ev._y+30;
+        thick = -1;
+
+        // add the corresponding (coordinates,thickness,category) to variable that
+        // will be passed to python to update the actual python array of traces
+        trace.push(ev._x+30,ev._y+30,thick,z);
+                //pushUndo(trace)
+
+        traces.push(trace.toString())
+        document.getElementById("btnUndo").style.visibility = "visible";
+
+        img_update();
+
+      }
+    };
+
+    this.mouseup = function (ev) {
+      clicked = false;
+
+      if (tool.started) {
+        // tool.mousemove(ev);
+        tool.started = false;
+
+        var z = document.getElementById('dcolor').value;
+
+        x = ev._x+30;
+        y = ev._y+30;
+        thick = -1;
+
+        // add the corresponding (coordinates,thickness,category) to variable that
+        // will be passed to python to update the actual python array of traces
+        trace.push(ev._x+30,ev._y+30,thick,z);
+
+        //pushUndo(trace)
+
+        traces.push(trace.toString())
+                // hide Undo button and reactivate it only if traces.length > 0
         document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();

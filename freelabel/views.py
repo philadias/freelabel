@@ -20,7 +20,7 @@ import json
 import urllib.request as ur
 
 from skimage.draw import line
-from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg
+from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg, traceCircle
 
 from random import shuffle
 
@@ -693,7 +693,11 @@ def drawTrace(userAnns,traces):
 
             thick = int(trace[i+2])
             catId = int(trace[i+3])
-        userAnns = tracePolyline(img,pts,catId,thick)    
+
+        if thick > 0:
+            userAnns = tracePolyline(img,pts,catId,thick)
+        else:
+            userAnns = traceCircle(img, pts, catId)
 
     return userAnns 
 
