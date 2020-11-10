@@ -246,18 +246,24 @@ def tracePolyline(img,pts,catId,thick):
    
     return img
 
-def traceCircle(img,pts,catId):
+def traceRect(img,pts,catId,thick):
+    # pts = pts.reshape((-1, 1, 2))
+    initX, initY = np.int32(pts[0])
+    endX, endY = np.int32(pts[1])
+    cv.rectangle(img,(initX, initY),(endX, endY),catId,thick)
+
+    sio.savemat('checkRect.mat', mdict={'img': img})
+
+    return img
+
+def traceCircle(img,pts,catId,thick):
     # thickness = -1 indicates the circle should be filled
     initX,initY = np.int32(pts[0])
     x, y = pts[1]
-
     radius = round(((x - initX) ** 2 + (y - initY) ** 2) ** 0.5)
-    print(type(initX))
-    print(type(np.int32(radius)))
-    cv.circle(img,(initX,initY),np.int32(radius),catId,-1)
+    cv.circle(img,(initX,initY),np.int32(radius),catId,thick)
 
-    sio.savemat('checkCircle.mat',mdict={'img':img})
-
+    sio.savemat('checkCircle.mat', mdict={'img': img})
     return img
 
 def saveGTasImg(username,id_):

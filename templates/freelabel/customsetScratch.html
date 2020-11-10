@@ -138,21 +138,24 @@
    
     <label>Tool: <select id="dtool">
       <option value="pencil">Pencil</option>  
-      <option value="line">Line</option> 
+      <option value="line">Line</option>
       <option value="eraser">Eraser</option>
       <option value="circle">Circle</option>
+      <option value="rect">Rectangle</option>
     </select></label>
 
     <!-- option list for all objects in image -->
     <label id ="objects">Category: <select id="dcolor">
       <option id="opt1" value=1 onclick="document.getElementById('objects').style.color = 'black'">Background</option>
     </select></label>
+    <button type="button" id="btnAddCat" onclick="addCategory();">+</button>
 
     <label>Size: <select id="dsize">
       <option value=1>Small</option>  
       <option value=2>Normal</option>  
       <option value=4>Large</option>  
-      <option selected value=8>Huge</option>      
+      <option selected value=8>Huge</option>
+      <option value=9 id ="optFill" style="visibility: hidden">Filled</option>
     </select></label>
 
     <!-- if we were to manually control RGR parameters -->

@@ -20,7 +20,7 @@ import json
 import urllib.request as ur
 
 from skimage.draw import line
-from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg, traceCircle
+from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg, traceCircle, traceRect
 
 from random import shuffle
 
@@ -678,26 +678,33 @@ def drawTrace(userAnns,traces):
         # each trace "coordinate" contains: x,y,thickness,category,
         # so a line is defined by (trace[i],trace[i+1])--(trace[i+4],trace[i+5]), 
         # with thickness=trace[i+2] (or trace[i+6]) and category=trace[i+3](or trace[i+7])               
-        pts = np.empty(shape=[0, 2]);
-        for i in range(0,len(trace)-5,4):            
+        pts = np.empty(shape=[0, 2])
+        for i in range(0,len(trace)-6,5):
             
             # trace line between coordinates
             c0 = int(trace[i]) # i.e. x0
             r0 = int(trace[i+1]) # i.e. y0
             
-            c1 = int(trace[i+4])
-            r1 = int(trace[i+5])
+            c1 = int(trace[i+5])
+            r1 = int(trace[i+6])
 
             pts = np.append(pts,[[c0,r0]],axis=0)
             pts = np.append(pts,[[c1,r1]],axis=0)
 
             thick = int(trace[i+2])
+            # workaround to the fact that JS variable can't handle negatives, but -1 indicates to CV to fill
+            if thick > 8:
+                thick = -1
             catId = int(trace[i+3])
+            type_ = int(trace[i+4])
 
-        if thick > 0:
+        if type_ == 0:
             userAnns = tracePolyline(img,pts,catId,thick)
         else:
-            userAnns = traceCircle(img, pts, catId)
+            if type_ == 1:
+                userAnns = traceCircle(img, pts, catId,thick)
+            else:
+                userAnns = traceRect(img,pts,catId,thick)
 
     return userAnns 
 

@@ -508,6 +508,14 @@
       });  
     } 
 
+  function addCategory() {
+        var newCat = prompt("Add new category:", "category");
+
+        catArray.push(newCat);
+
+        createAgainList()
+  }
+
   function createAgainList(){
       // remove rest elements from current array
       for (var ii = 0; ii < catArray.length; ii++)
