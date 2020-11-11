@@ -267,7 +267,7 @@
         // hide Refine button to avoid double call
         document.getElementById("btnRefine").style.visibility = "hidden";          
         // hide Undo button and reactivate it only if traces.length > 0 
-        document.getElementById("btnUndo").style.visibility = "hidden";
+        // document.getElementById("btnUndo").style.visibility = "hidden";
 
         // get pointer to image on bottom canvas
         var img = document.getElementById("initial");
@@ -539,7 +539,7 @@
       for (var k = 0; k < catArray.length; k++) {
         var option = document.createElement("option");
         //set value as first, 1,2,3....21
-        option.value = k+1;
+        option.value = k;
         option.id = "opt" + k;
         //alert(option.id);
         option.text = catArray[k]; //actually,0 is background; we need to change its value to 1
@@ -556,7 +556,7 @@
         rect.setAttributeNS(null, 'y', k*20);
         rect.setAttributeNS(null, 'height', '15');
         rect.setAttributeNS(null, 'width', '35');
-        rect.setAttributeNS(null, 'fill', getColor(k+1));
+        rect.setAttributeNS(null, 'fill', getColor(k));
         document.getElementById('svgOne').appendChild(rect);
 
         var text_ = document.createElementNS(svgns,'text');
@@ -619,7 +619,7 @@
     else if(color_select == 21)
       colorRGB = 'rgb(0,64,128)';
     else
-      colorRGB = 'grey';
+      colorRGB = 0;
     
     return colorRGB
 

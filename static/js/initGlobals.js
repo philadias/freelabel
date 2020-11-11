@@ -118,12 +118,12 @@
           element.value = "line"
           var event = new Event('change');
           element.dispatchEvent(event);
-        } else if (e.which == 82 || e.which == 71){  //R,r or G,g
-          callRefine();
+        } else if (e.which == 71){  //G,g
+          callRefineCustom();
         }
-        else if (e.which == 85){  //U,u
-          undoTrace();
-        }          
+        // else if (e.which == 85){  //U,u
+        //   undoTrace();
+        // }
         else if (e.which == 38){//up arrow
           e.preventDefault(); // Prevent the default action
           var element = document.getElementById('dsize');

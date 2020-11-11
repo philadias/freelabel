@@ -139,13 +139,13 @@
     <label>Tool: <select id="dtool">
       <option value="pencil">Pencil</option>  
       <option value="line">Line</option>
-      <option value="eraser">Eraser</option>
       <option value="circle">Circle</option>
       <option value="rect">Rectangle</option>
     </select></label>
 
     <!-- option list for all objects in image -->
     <label id ="objects">Category: <select id="dcolor">
+      <option id="opt0" value=0 onclick="document.getElementById('objects').style.color = 'grey'">Eraser</option>
       <option id="opt1" value=1 onclick="document.getElementById('objects').style.color = 'black'">Background</option>
     </select></label>
     <button type="button" id="btnAddCat" onclick="addCategory();">+</button>
@@ -194,18 +194,21 @@
  <!--   Div and CSS for positions of background image and final mask,
           mask will be on the top of initial image.  -->
   <div id="viewOutputs" style="float: left; position: relative; top: 0; left: 0; " class="noselect">
-        <h3> Score Rules Chart </h3>
         <!-- <img id="scoreRules" src="/static/images/scoreRules.png" style="height: 300px">  -->
         <img id="initial" style="position: absolute; top: 0; left: 0; visibility: hidden; width: 800px">
         <!-- hide maskImg if there is no result yet -->
-        <img id="maskImg" style ="position: absolute; top: 0; left: 0; visibility: hidden" onerror="maskOn=false;"> 
+        <img id="maskImg" style ="position: absolute; top: 0; left: 0; visibility: hidden" onerror="maskOn=false;">
   </div>
 
   <div id="hotkeys" style="float: left; position: relative; top: 0; left: 0; " class="noselect">
       <h3>Keyboard shortcuts:</h3>
-      <p>Tools: P - Pencil; L - Line; E - Eraser; G/R - Grow Traces(Refine); U - Undo; Tab - Switch category </p>
-      <p>Toggles (On/off): M - Mask; B - boxes ; T - traces</p>
-      <p>Trace size: &uarr; and &darr;</p>
+      <p>P - Pencil <img src="/static/images/pencil4.png" style="height: 20px">
+      L - Line <img src="/static/images/line4.png" style="height: 20px">
+      R - Rectangle <img src="/static/images/rect4.png" style="height: 20px">
+      C - Circle <img src="/static/images/circle4.png" style="height: 20px"> </p>
+    <p>G - Grow Traces; Tab - Switch category;   <b>Trace size:</b> &uarr; and &darr; </p>
+      <p>Toggles (On/off): M - Mask; T - traces</p>
+      <p></p>
   </div>
 
   <!-- loading icon to indicate that refinement is running -->

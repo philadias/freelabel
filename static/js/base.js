@@ -16,13 +16,25 @@
       element.value = "eraser"
       var event = new Event('change');
       element.dispatchEvent(event);
-    } else if (e.which == 76){  //L,l
+    } else if (e.which == 67){  //C,c
+      var element = document.getElementById('dtool');
+      element.value = "circle"
+      var event = new Event('change');
+      element.dispatchEvent(event);
+    }
+     else if (e.which == 82){  //R,r
+      var element = document.getElementById('dtool');
+      element.value = "rect"
+      var event = new Event('change');
+      element.dispatchEvent(event);
+    }
+    else if (e.which == 76){  //L,l
       var element = document.getElementById('dtool');
       element.value = "line"
       var event = new Event('change');
       element.dispatchEvent(event);
-    } else if (e.which == 82 || e.which == 71){  //R,r or G,g
-      callRefine();
+    } else if ( e.which == 71){  //R,r or G,g
+      callRefineCustom();
     }
     else if (e.which == 38){//up arrow
       e.preventDefault(); // Prevent the default action
@@ -243,7 +255,7 @@
         // hide Refine button to avoid double call
         document.getElementById("btnRefine").style.visibility = "hidden";          
         // hide Undo button and reactivate it only if traces.length > 0 
-        document.getElementById("btnUndo").style.visibility = "hidden";
+        // document.getElementById("btnUndo").style.visibility = "hidden";
 
         // get pointer to image on bottom canvas
         var img = document.getElementById("initial");
@@ -757,181 +769,8 @@
       temp_context.strokeStyle = 'rgb(0,64,128)';
       temp_context.fillStyle = 'rgb(0,64,128)';}
     else{
-      temp_context.strokeStyle = 'grey';
-      temp_context.fillStyle = 'grey';    }
-  }
-
-  // eraser tool
-  tools.eraser = function() {
-    var tool = this;
-    this.started = false;
-    var clicked = false;
-    var traceType = -1;
-
-    // change mouse icon to eraser
-    document.body.style.cursor = "url('/static/images/eraser"+document.getElementById('dsize').value+".png') 0 0, default";
-    // document.body.style.cursor = "url('/static/images/eraser.png') 10 25, default";
-
-    // z contains the desired category (color) for trace. For eraser, that means 0
-    var z = 0;
-
-    this.touchstart = function (ev) {
-        trace = [];
-        // this prevents the page to scroll while drawing on temp_canvas
-        if (ev.target == temp_canvas) {
-          ev.preventDefault();
-        }
-
-        // get mouse coordinates
-        var x = ev._x;
-        var y = ev._y;
-
-        size_choose()
-        thick = temp_context.lineWidth;
-        trace.push(x,y,thick,z,traceType);
-
-        // starts trace
-        temp_context.beginPath();
-        temp_context.moveTo(ev._x, ev._y);
-        tool.started = true;
-    };
-
-    this.mousedown = function (ev) {
-        trace = [];
-        clicked = true
-
-        // get mouse coordinates
-        var x = ev._x;
-        var y = ev._y;
-
-        size_choose()
-        thick = temp_context.lineWidth;
-        trace.push(x,y,thick,z,traceType);
-
-        // starts trace
-        temp_context.beginPath();
-        temp_context.moveTo(ev._x, ev._y);
-        tool.started = true;
-    };
-
-
-    this.touchmove = function (ev) {
-      if (tool.started) {
-        // this prevents the page to scroll while drawing on temp_canvas
-        if (ev.target == temp_canvas) {
-          ev.preventDefault();
-        }
-
-        size_choose()
-
-        var x = ev._x;
-        var y = ev._y;
-
-        // for eraser, we draw on top of any previous trace with the white color
-        temp_context.strokeStyle = 'white';
-        temp_context.globalCompositeOperation="destination-out";
-        temp_context.lineTo(x, y);
-        temp_context.stroke();
-
-        thick = temp_context.lineWidth;
-
-        // add the corresponding (coordinates,thickness,category) to variable that
-        // will be passed to python to update the actual python array of traces
-        trace.push(x,y,thick,z,traceType);
-
-        //when finger touch move out of canvas, stop trace.
-        document.getElementById("imageTemp").ontouchleave = function(){touchEnd()};
-
-        function touchEnd() {
-          tool.started = false;
-          //pushUndo(trace)
-          traces.push(trace.toString())
-          document.getElementById("btnUndo").style.visibility = "visible";
-          img_update();
-          document.getElementById("imageTemp").ontouchleave = function(){}          
-
-          }
-
-      }
-    };
-
-    this.mousemove = function (ev) {
-      if (tool.started) {
-
-        size_choose();
-
-        var x = ev._x;
-        var y = ev._y;
-
-        temp_context.strokeStyle = 'white';
-        temp_context.globalCompositeOperation="destination-out";
-        temp_context.lineTo(x, y);
-        temp_context.stroke();
-
-        thick = temp_context.lineWidth;
-
-        // add the corresponding (coordinates,thickness,category) to variable that
-        // will be passed to python to update the actual python array of traces
-        trace.push(x,y,thick,z,traceType);
-
-        //when mouse move out of canvas, stop trace.
-        // mouse out is triggered when clicked, so we use clicked to double check
-        document.getElementById("imageTemp").onmouseout = function(){
-          if (clicked == true){
-            clicked = false;
-            mouseOut();
-
-          }
-        };
-
-        function mouseOut() {
-            tool.started = false;
-            //pushUndo(trace)
-            traces.push(trace.toString())
-            document.getElementById("btnUndo").style.visibility = "visible";
-            img_update();
-            document.getElementById("imageTemp").onmouseout = function(){}
-
-          }
-
-      }
-    };
-
-
-    this.touchend = function (ev) {
-      if (tool.started) {
-        // this prevents the page to scroll while drawing on temp_canvas
-        if (ev.target == temp_canvas) {
-          ev.preventDefault();
-        }
-
-        // tool.touchmove(ev);
-        tool.started = false;
-        //pushUndo(trace)
-        traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
-
-        img_update();
-        trace_number += 1;
-
-      }
-    };
-
-
-    this.mouseup = function (ev) {
-      clicked = false;
-
-      if (tool.started) {
-        // tool.mousemove(ev);
-        tool.started = false;
-        //pushUndo(trace)
-        traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
-
-        img_update();
-        trace_number += 1;
-      }
-    };
+      temp_context.strokeStyle = 0;
+      temp_context.fillStyle = 0;    }
   }
 
   // The drawing pencil.
@@ -941,14 +780,18 @@
     var clicked = false;
     var traceType = 0;
 
+    var z = document.getElementById('dcolor').value;
+    // if (z == 0)
+    //   document.body.style.cursor = "url('/static/images/eraser"+document.getElementById('dsize').value+".png') 0 0, default";
+    // else
+    //   document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";
+
     document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";
 
     // This is called when you start holding down the touch.
     // This starts the pencil drawing.
     this.touchstart = function (ev) {
         trace = [];
-
-        var z = document.getElementById('dcolor').value;
 
         // this prevents the page to scroll while drawing on temp_canvas
         if (ev.target == temp_canvas) {
@@ -961,7 +804,6 @@
         size_choose()
         thick = temp_context.lineWidth;
         trace.push(x,y,thick,z,traceType);
-
 
         temp_context.beginPath();
         temp_context.moveTo(ev._x, ev._y);
@@ -972,8 +814,6 @@
     // This starts the pencil drawing.
     this.mousedown = function (ev) {
         trace = [];
-
-        var z = document.getElementById('dcolor').value;
 
         clicked = true;
 
@@ -1023,9 +863,8 @@
 
         function touchLeave() {
             tool.started = false;
-                        //pushUndo(trace)
             traces.push(trace.toString())
-            document.getElementById("btnUndo").style.visibility = "visible";
+            // document.getElementById("btnUndo").style.visibility = "visible";
             img_update();
             document.getElementById("imageTemp").ontouchleave = function(){}
           }
@@ -1047,7 +886,13 @@
         var y = ev._y;
         var z = document.getElementById('dcolor').value;
 
-        temp_context.globalCompositeOperation="source-over";
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
         temp_context.lineTo(ev._x, ev._y);
         temp_context.stroke();
 
@@ -1068,7 +913,7 @@
           clicked = false;
                     //pushUndo(trace)
           traces.push(trace.toString())
-          document.getElementById("btnUndo").style.visibility = "visible";
+          // document.getElementById("btnUndo").style.visibility = "visible";
           img_update();
           document.getElementById("imageTemp").ontouchleave = function(){}
         }
@@ -1089,7 +934,7 @@
         tool.started = false;
         //pushUndo(trace)
         traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
 
@@ -1113,7 +958,7 @@
         //pushUndo(trace)
 
         traces.push(trace.toString())        
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
         img_update();        
 
         trace = [];
@@ -1133,7 +978,8 @@
     var traceType = 0;
     // change mouse icon to line tool
     // document.body.style.cursor = "crosshair";
-    document.body.style.cursor = "url('/static/images/line" + document.getElementById('dsize').value + ".png') 0 0, default";
+    document.body.style.cursor = "url('/static/images/line"+document.getElementById('dsize').value+".png') 0 0, default";
+
 
     // the mouse events are trickier for this tool, since we
     function mouseOut() {
@@ -1148,7 +994,7 @@
       //pushUndo(trace)
 
       traces.push(trace.toString())
-      document.getElementById("btnUndo").style.visibility = "visible";
+      // document.getElementById("btnUndo").style.visibility = "visible";
 
       img_update();
       document.getElementById("imageTemp").ontouchleave = function () {
@@ -1263,8 +1109,15 @@
         y = ev._y;
 
         var z = document.getElementById('dcolor').value;
-        // alert(initX)
         temp_context.putImageData(cpyCtx, 0, 0);
+
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
 
         temp_context.beginPath();
         temp_context.moveTo(initX, initY);
@@ -1300,7 +1153,7 @@
         //pushUndo(trace)
 
         traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
 
@@ -1328,7 +1181,7 @@
 
         traces.push(trace.toString())
         // hide Undo button and reactivate it only if traces.length > 0
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
       }
@@ -1345,9 +1198,7 @@
     var initX, initY; // initial mouse coordinates for this line
     var traceType = 2;
 
-    // change mouse icon to line tool
-    // document.body.style.cursor = "crosshair";
-    document.body.style.cursor = "url('/static/images/rect" + document.getElementById('dsize').value + ".png') 0 0, default";
+    document.body.style.cursor = "url('/static/images/rect"+document.getElementById('dsize').value+".png') 0 0, default";
 
     // the mouse events are trickier for this tool, since we
     function mouseOut() {
@@ -1362,7 +1213,7 @@
       //pushUndo(trace)
 
       traces.push(trace.toString())
-      document.getElementById("btnUndo").style.visibility = "visible";
+      // document.getElementById("btnUndo").style.visibility = "visible";
 
       img_update();
       document.getElementById("imageTemp").ontouchleave = function () {
@@ -1460,6 +1311,14 @@
         var z = document.getElementById('dcolor').value;
         temp_context.putImageData(cpyCtx, 0, 0);
 
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
+
         temp_context.beginPath();
         temp_context.moveTo(initX, initY);
 
@@ -1477,8 +1336,15 @@
         y = ev._y;
 
         var z = document.getElementById('dcolor').value;
-        // alert(initX)
         temp_context.putImageData(cpyCtx, 0, 0);
+
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
 
         temp_context.beginPath();
         // temp_context.moveTo(initX, initY);
@@ -1517,7 +1383,7 @@
         //pushUndo(trace)
 
         traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
 
@@ -1545,7 +1411,7 @@
 
         traces.push(trace.toString())
         // hide Undo button and reactivate it only if traces.length > 0
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
       }
@@ -1563,6 +1429,7 @@
     var traceType = 1;
     // change mouse icon to circle tool
     // document.body.style.cursor = "crosshair";
+
     document.body.style.cursor = "url('/static/images/circle"+document.getElementById('dsize').value+".png') 0 0, default";
 
     // the mouse events are trickier for this tool, since we
@@ -1578,7 +1445,7 @@
             //pushUndo(trace)
 
       traces.push(trace.toString())
-      document.getElementById("btnUndo").style.visibility = "visible";
+      // document.getElementById("btnUndo").style.visibility = "visible";
 
       img_update();
       document.getElementById("imageTemp").ontouchleave = function(){}
@@ -1691,8 +1558,15 @@
         y = ev._y+30;
 
         var z = document.getElementById('dcolor').value;
-        // alert(initX)
         temp_context.putImageData(cpyCtx, 0, 0);
+
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
 
         temp_context.beginPath();
         var radius = ((x-initX)**2 +(y-initY)**2)**0.5;
@@ -1730,7 +1604,7 @@
                 //pushUndo(trace)
 
         traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
 
@@ -1758,58 +1632,58 @@
 
         traces.push(trace.toString())
                 // hide Undo button and reactivate it only if traces.length > 0
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
       }
     };
   }
 
-  function pushUndo(trace){
-    var trace_ = [];
-    for (j = 0; j < trace.length; j++) {
-      trace_[j] = trace[j];
-    }
-    // replace category ID by eraser ID
-    for (j = 3; j < trace_.length; j=j+4) {
-      trace_[j] = 0;
-    }
-
-    undoArr.push(trace_)
-    // drop first (oldest) element if more than 5 elements
-    if (undoArr.length > 5)
-      undoArr.shift(); 
-  }
-
- function undoTrace(){
-      // get last trace
-    var trace_ = traces[traces.length-1]; /*THIS IS A STRING*/
-    // get coordinates as integer from string as in example
-    var trace_ = trace_.split(",").map(Number);
-
-    // erase from canvas
-    temp_context.strokeStyle = 'white';
-    temp_context.globalCompositeOperation="destination-out";
-
-    temp_context.lineWidth = trace_[2]+1;
-
-    temp_context.beginPath();
-    temp_context.moveTo(trace_[0], trace_[1]);
-
-    for (j = 4; j < trace_.length; j=j+4) {
-      temp_context.lineTo(trace_[j], trace_[j+1]);
-      temp_context.stroke();
-    }
-
-    // DELETE LAST TRACE FROM TRACES ARRAY
-    traces.splice(-1,1); //remove last item from traces array
-
-    img_update();           
-    
-    // CHECK LENGTH OF TRACES ARRAY
-    // IF IT IS EMPTY, NO TRACE CAN BE UNDONE
-    if(traces.length == 0){  //empty array?
-      document.getElementById("btnUndo").style.visibility = "hidden";
-    }
-
-  }
+ //  function pushUndo(trace){
+ //    var trace_ = [];
+ //    for (j = 0; j < trace.length; j++) {
+ //      trace_[j] = trace[j];
+ //    }
+ //    // replace category ID by eraser ID
+ //    for (j = 3; j < trace_.length; j=j+4) {
+ //      trace_[j] = 0;
+ //    }
+ //
+ //    undoArr.push(trace_)
+ //    // drop first (oldest) element if more than 5 elements
+ //    if (undoArr.length > 5)
+ //      undoArr.shift();
+ //  }
+ //
+ // function undoTrace(){
+ //      // get last trace
+ //    var trace_ = traces[traces.length-1]; /*THIS IS A STRING*/
+ //    // get coordinates as integer from string as in example
+ //    var trace_ = trace_.split(",").map(Number);
+ //
+ //    // erase from canvas
+ //    temp_context.strokeStyle = 'white';
+ //    temp_context.globalCompositeOperation="destination-out";
+ //
+ //    temp_context.lineWidth = trace_[2]+1;
+ //
+ //    temp_context.beginPath();
+ //    temp_context.moveTo(trace_[0], trace_[1]);
+ //
+ //    for (j = 4; j < trace_.length; j=j+4) {
+ //      temp_context.lineTo(trace_[j], trace_[j+1]);
+ //      temp_context.stroke();
+ //    }
+ //
+ //    // DELETE LAST TRACE FROM TRACES ARRAY
+ //    traces.splice(-1,1); //remove last item from traces array
+ //
+ //    img_update();
+ //
+ //    // CHECK LENGTH OF TRACES ARRAY
+ //    // IF IT IS EMPTY, NO TRACE CAN BE UNDONE
+ //    if(traces.length == 0){  //empty array?
+ //      document.getElementById("btnUndo").style.visibility = "hidden";
+ //    }
+ //
+ //  }
