@@ -6,6 +6,7 @@ from distutils.core import setup, Extension
 import cv2 as cv
 import numpy as np
 
+import os
 import scipy.io as sio
 import numpy.matlib as npm
 
@@ -15,6 +16,7 @@ import json
 # imports for calling C++ reg.growing code
 import ctypes
 import callRGR
+import pandas as pd
 
 # for parallelism
 import multiprocessing
@@ -23,11 +25,12 @@ import pickle
 
 #####
 
-def regGrowing(area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet):
+def regGrowing(rng,area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet):
     # h is the index o pixels p_h within R_H. We randomly sample seeds
     # according to h~U(1,|R_H|)
     # round down + Uniform distribution
-    h = np.floor(area * np.random.random((area,)))
+    np.random.seed(itSet)
+    h = np.floor(area * rng.random(size=area))
     h = h.astype(np.int64)
  
     # s is the index of each seed for current region growing step
@@ -53,35 +56,35 @@ def regGrowing(area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,cl
     out_ = callRGR.callRGR(img_r, img_g, img_b, preSeg.astype(np.int32), S.astype(np.int32), width, height, numSamples, m,RGRout.astype(np.int32))
     PsiMap = np.asarray(out_)       
 
-    # number of generated clusters.  We subtract 2 to disconsider the pixels pre-classified as background (indexes -1 and 0)
-    N = np.amax(PsiMap)-2
+    # new version
+    d = PsiMap.ravel()
+    df = pd.DataFrame({'clusterIdx': d})
 
-    clsScores = clsMap.flatten(order='F')
-    clsScores = clsScores.astype(np.double)
+    clsArrays = np.split(clsMap,numCls,axis=2)
+    for it, array_ in enumerate(clsArrays):
+        # print(array_.shape)
+        df.insert(it + 1, "cls%d" % it, array_.ravel('F'), True)
 
-    # majority voting per cluster
-    for k in range(0, N):       
-        p_j_ = np.nonzero(PsiMap == k)
-        p_j_ = np.asarray(p_j_)
-
-        for itCls in range(0, numCls):
-            idxOffset = sz*itCls;
-            p_j_cls = p_j_ + idxOffset;
-
-            noPositives =  (np.count_nonzero(clsScores[p_j_cls] > 0));
-            clsScores[p_j_cls] = float(noPositives)/p_j_.size
-
-    clsScores = np.reshape(clsScores,(height,width,numCls),order='F')    
+    dfMeans = df.groupby('clusterIdx').mean()
+    means_ = np.asarray(dfMeans.iloc[d])
+    clsScores = np.hsplit(means_,numCls)
+    # np.save('PsiMap%d.npy'%itSet,PsiMap)
+    # sio.savemat('clsMap%d.mat' % itSet, mdict={'clsScores':clsScores,'means_':means_})
+    clsScores = np.reshape(clsScores,(numCls,height,width),order='F')
+    clsScores = np.moveaxis(clsScores,0,-1)
+ 
 
     return_dict[itSet] = clsScores
 ########
-def main(username,img,anns,weight_,m):
+def main(username,img,anns,weight_,m,url,mergePreSeg):
     # get image size, basically height and width
+    t1 = time.time()
+    
     height, width, channels = img.shape
     heightAnns, widthAnns = anns.shape
 
     if(widthAnns != width):
-        img = cv.resize(img, (widthAnns, heightAnns)) 
+        img = cv.resize(img, (widthAnns, heightAnns))
 
     height, width, channels = img.shape
 
@@ -103,7 +106,7 @@ def main(username,img,anns,weight_,m):
     ## RGR parameters
     # fixed parameters
     # m = .1  # theta_m: balance between
-    numSets = 8    # number of seeds sets (samplings)
+    numSets = 4    # number of seeds sets (samplings)
     # cellSize = 10-int(weight_)   # average spacing between samples
     cellSize = 1.333   # average spacing between samples
 
@@ -151,15 +154,19 @@ def main(username,img,anns,weight_,m):
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
 
+    rng = np.random.default_rng()
+
     jobs = []
     for itSet in range(0, numSets):
-        p = multiprocessing.Process(target=regGrowing, args=(area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet))
+        p = multiprocessing.Process(target=regGrowing, args=(rng,area,numSamples,R_H,height,width,sz,preSeg,m,img_r,img_g,img_b,clsMap,numCls,return_dict,itSet))
         jobs.append(p)
         p.start()
 
     for proc in jobs:
         proc.join()
 
+    t2 = time.time()
+    print("### TIME: %.2f" % (t2-t1))
     outputPar = return_dict.values()    
 
     outputPar = np.asarray(outputPar)
@@ -170,9 +177,35 @@ def main(username,img,anns,weight_,m):
     # averaging scores obtained for each set of seeds
     ref_M = (np.sum(ref_cls,axis=3))/numSets        
 
-    # maximum likelihood across refined classes scores ref_M
-    maxScores = np.amax(ref_M,axis=2)
-    maxClasses = np.argmax(ref_M,axis=2)
+    # **INCORPORATING PRE-SEGMENTATIONS
+    # scoremaps =
+    # sio.savemat('pairs%d.mat' % itSet, mdict={'ref_M':ref_M,'scoremaps':scoremaps,'uncMap':uncMap})
+    print(mergePreSeg)
+    if mergePreSeg == True:
+        w_ = 50
+
+        urlGT,_ = os.path.splitext(url)
+        # load .mat info from URL
+        scoremaps,uncMap = loadLocalGT(urlGT+'.mat')
+        heightS, widthS, _ = scoremaps.shape
+        if (widthAnns != widthS):
+            scoremaps = cv.resize(scoremaps, (widthAnns, heightAnns))
+            uncMap = cv.resize(uncMap, (widthAnns, heightAnns))
+
+        adjAnns = 1-(1/np.exp(ref_M*w_*5))
+        weightAnns = np.repeat(np.max(adjAnns,axis=2)[:, :, np.newaxis],2,axis=2)
+
+        adjUncMap = np.divide(1,np.exp(uncMap*w_*0.5))
+        weightMap = np.repeat(adjUncMap[:, :, np.newaxis],2,axis=2)
+
+        avgMap = np.divide(np.multiply(scoremaps,weightMap)+np.multiply(adjAnns,weightAnns),weightAnns+weightMap)
+        # sio.savemat('pairs%d.mat' % itSet, mdict={'adjUncMap':adjUncMap,'adjAnns':adjAnns,'weightAnns':weightAnns,'ref_M':ref_M,'scoremaps':scoremaps,'uncMap':uncMap,'avgMap':avgMap,'weightMap':weightMap})
+        # maximum likelihood across refined classes scores ref_M
+    else:
+        avgMap = ref_M
+    # sio.savemat('testrefm.mat', mdict={'outputPar':outputPar})
+    maxScores = np.amax(avgMap,axis=2)
+    maxClasses = np.argmax(avgMap,axis=2)
 
     detMask = np.uint8(maxClasses+1)
 
@@ -196,11 +229,10 @@ def main(username,img,anns,weight_,m):
 
     return im_color
 
-def startRGR(username,imgnp,userAnns,cnt,weight_,m):
+def startRGR(username,img,userAnns,cnt,weight_,m,url,mergePreSeg):
 
-    img = cv.imdecode(imgnp, cv.IMREAD_COLOR)
-    im_color = main(username,img,userAnns,weight_,m)
-
+    # img = cv.imdecode(imgnp, cv.IMREAD_COLOR)
+    im_color = main(username,img,userAnns,weight_,m,url,mergePreSeg)
     cv.imwrite('static/'+username+'/refined'+str(cnt)+'.png', im_color)
 
 def traceLine(img,r0,c0,r1,c1,catId,thick):
@@ -212,6 +244,23 @@ def tracePolyline(img,pts,catId,thick):
     pts = pts.reshape((-1,1,2))
     cv.polylines(img,np.int32([pts]),False,catId,thick)
    
+    return img
+
+def traceRect(img,pts,catId,thick):
+    # pts = pts.reshape((-1, 1, 2))
+    initX, initY = np.int32(pts[0])
+    endX, endY = np.int32(pts[1])
+    cv.rectangle(img,(initX, initY),(endX, endY),catId,thick)
+
+    return img
+
+def traceCircle(img,pts,catId,thick):
+    # thickness = -1 indicates the circle should be filled
+    initX,initY = np.int32(pts[0])
+    x, y = pts[1]
+    radius = round(((x - initX) ** 2 + (y - initY) ** 2) ** 0.5)
+    cv.circle(img,(initX,initY),np.int32(radius),catId,thick)
+
     return img
 
 def saveGTasImg(username,id_):
@@ -235,12 +284,30 @@ def saveGTasImg(username,id_):
 
     cv.imwrite('static/'+username+'/GTimage'+ str(id_) +'.png', im_color)
 
+def readLocalImg(filename):
+    img = cv.imread(filename)
+
+    return img
+
+
+def loadLocalGT(filename):
+    matvar = sio.loadmat(filename)
+    softScores = np.asarray(matvar['softScores'],dtype=float)
+    uncMap = np.asarray(matvar['detUncMap'], dtype=float)
+
+    # adjust range
+    uncMap = (uncMap-0.5)/5
+    uncMap[uncMap > 1] = 1
+
+    # maxScores = np.max(softScores,dim=2)
+    # cnnMask = np.amax(softScores, dim=2)
+    return softScores,uncMap
 
 def cmpToGT(username):
     # load current mask generated by the user
     resim = np.load('static/'+username+'/lastmask.npy')
 
-    GTfile = 'static/'+username+'/GT.mat';
+    GTfile = 'static/'+username+'/GT.mat'
     # load ground truth (GT)
     matvar = sio.loadmat(GTfile)
     gtim =  np.asarray(matvar['mtx'],dtype=float)

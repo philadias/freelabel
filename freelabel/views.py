@@ -20,13 +20,47 @@ import json
 import urllib.request as ur
 
 from skimage.draw import line
-from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline
+from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg, traceCircle, traceRect
 
 from random import shuffle
 
 import scipy.io as sio
 
 import datetime, math
+
+from threading import Thread
+
+# for local folder usage (https://stackoverflow.com/questions/39801718/how-to-run-a-http-server-which-serves-a-specific-path)
+from http.server import HTTPServer as BaseHTTPServer, SimpleHTTPRequestHandler
+# import SimpleHTTPServer
+
+class HTTPHandler(SimpleHTTPRequestHandler):
+    # def do_POST(self):
+    #     print("here")
+    #     if self.path.startswith('/kill_server'):
+    #         print("Server is going down, run it again manually!")
+    #         def kill_me_please(server):
+    #             server.shutdown()
+    #             server.server_close()
+    #         # httpd = HTTPServer('', ("", 8889))
+    #         t=Thread(target=kill_me_please,args=(self.server,))
+    #         t.start()                
+    #         self.send_error(500)   
+    #     print("move on")
+    #     return  
+
+    """This handler uses server.base_path instead of always using os.getcwd()"""
+    def translate_path(self, path):
+        path = SimpleHTTPRequestHandler.translate_path(self, path)
+        relpath = os.path.relpath(path, os.getcwd())
+        fullpath = os.path.join(self.server.base_path, relpath)
+        return fullpath  
+
+class HTTPServer(BaseHTTPServer):
+    """The main server, you pass in base_path which is the path you want to serve requests from"""
+    def __init__(self, base_path, server_address, RequestHandlerClass=HTTPHandler):
+        self.base_path = base_path
+        BaseHTTPServer.__init__(self, server_address, RequestHandlerClass)
 
 # used to return numpy arrays via AJAX to JS side
 class NumpyEncoder(json.JSONEncoder):
@@ -42,129 +76,161 @@ def main(request):
 # renders the main playing page
 def play(request):    
     return render(request, 'freelabel/main.html')    
-  
-def loadlist(request):
-    # load text file with list of images
-    f = open('static/imgList2.txt', 'r')
-    imgList = f.readlines()
-    f.close()
 
-    # load text file with list of corresponding ground truths
-    f = open('static/gtList2.txt', 'r')
-    gtList = f.readlines()
-    f.close()
+####
+def playCustom(request):    
+    return render(request, 'freelabel/customset.html')
 
+def playCustomScratch(request):
+    return render(request, 'freelabel/customsetScratch.html')
+
+def threadfunction(web_dir):
+
+    PORT = 8889
+        # web_dir = '/home/philipe/Pictures/test/'
+    httpd = HTTPServer(web_dir, ("", 0))   
+    
+    httpd.handle_request()
+
+def setcustomfolder(httpd):
+    # If the request is a HTTP POST, try to pull out the relevant information.
+    # if request.method == 'POST':
+        # web_dir = request.POST.get('folderpath')
+    # web_dir = '/home/philipe/Pictures/test/'
+
+    httpd.serve_forever()
+
+    # print("###### DONE ###########")
+
+    # return render(request, 'freelabel/register.html') 
+
+def loadcustom(request):
+    
+    localFolder = request.POST.get('folderpath')
+    setname = request.POST.get('datasetname')
+
+    # # web_dir = '/home/philipe/Pictures/test/'
+    # httpd = HTTPServer(localFolder, ("", PORT))
+    # httpd.handle_request()
+
+    httpd = HTTPServer(localFolder, ("", 0))
+    sockinfo = httpd.socket.getsockname()
+    PORT = sockinfo[1]
+
+    t=Thread(target=setcustomfolder,args=[httpd])
+    t.start()
+
+    username = request.user.username
+
+    # get list of files in folder of custom dataset
+    imgList = []
+    cnnList = []
+
+    files_ = glob.glob(os.path.join(localFolder,"*.jpg"))
+    files_.extend(glob.glob(os.path.join(localFolder,"*.png")))
+    files_.extend(glob.glob(os.path.join(localFolder,"*.JPEG")))
+    imgList = [os.path.basename(x) for x in files_]
+
+    # in case of loading pre-segmentation maps
+    for it,x in enumerate(files_):
+        cnnList.append(imgList[it][0:-4] + ".png")
+
+    # imgList = ['/' + s for s in imgList]
+    print(imgList)
+    catList = ['eraser']
     # load text file with list of categories in the dataset
-    f = open('static/listCats.txt', 'r')
-    catsList = f.readlines()
-    f.close()
-
-    # load bounding box 
-    f = open('static/bboxListCls.txt', 'r')
-    bboxList = f.readlines()
-    f.close()
-
-    # load list of classes per image 
-    f = open('static/classList.txt', 'r')
-    clsList = f.readlines()
-    f.close()
+    if os.path.exists(os.path.join(localFolder,'categories.txt')):
+        f = open(os.path.join(localFolder,'categories.txt'), 'r')
+        for elem in f.readlines():
+            catList.append(elem)
+        f.close()
+    else:
+        catList.append('background')
+        catList.append('building')
 
     # check if there is already a sequence of images for this user.
     # If not, creates one
-    username = request.user.username
-    filename = 'static/lists/imgs_' + username + '.txt'
-    # print(username)
-
+    filename = 'static/lists/imgs_' + setname + '_' + username + '.txt'
     if not os.path.exists(filename):
-        shuffleList(filename,len(imgList))
+        shuffledIds = shuffleList(filename,len(imgList))
+        # cnnList = cnnList[shuffledIds]
 
     idsList = np.loadtxt(filename, delimiter=',')    
+
     idsList = list(idsList)
-    
+
     # get current total score and next image to be labeled
-    filename = 'static/lists/info_' + username + '.txt'
+    filename = 'static/lists/info'+ setname +'_' + username + '.txt'
     if not os.path.exists(filename):
         nextId = 0
-        total_ = 0
-        
-    else:  
-        info = np.loadtxt(filename, delimiter=',')    
-        nextId = info[0]
-        total_ = info[1]
+    else:          
+        info = np.loadtxt(filename)   
+        nextId = int(info)
+    # to append bar if needed
+    localFolder = os.path.join(localFolder,"")
+    return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'cnnList': cnnList,'catList':catList,'idsList': idsList,'username': username,'nextId':nextId,'localFolder':localFolder}), content_type="application/json")
 
-    # get list of top scorers
-    filename = 'static/lists/ranking.npy'
-    # if there is already a file with rankings, load its info that consists of:
-    # username, average, total of images, score total
-    if not os.path.exists(filename):
-        if nextId > 0:
-            ranking =  np.column_stack((username,total_/nextId,nextId, total_))
-        else:
-            ranking =  np.column_stack((username,0,0,0))
-        np.save('static/lists/ranking.npy', ranking)            
-    # create the file otherwise
+# redirecting for compatibility with older versions
+def refine(request):
+    refineCustom(request)
+
+def refineCustom(request): 
+    # get array of user traces from json 
+    jsonAnns = json.loads(request.session['userAnns'])
+    # convert it to numpy
+    userAnns = np.array(jsonAnns["userAnns"])
+
+    # get coordinates of trace to be drawn
+    traces = request.POST.getlist('trace[]')   
+
+    userAnns = drawTrace(userAnns,traces)
+
+    # check if both classes have been annotated
+    # list of annotated classes
+    clsList = np.unique(userAnns)
+    clsList = np.delete(clsList,0) # remove class 0
+    numCls = clsList.size # number of classes
+
+    if numCls > 1:
+        username = request.user.username
+
+        # flag indicating if annotation shall be merged with presegmentation
+        mergePreSeg = True if request.POST.get('mergePreSeg') == 'true' else False
+
+        # get URL of image
+        url = request.POST.get('img')
+
+        # get random ID that defines mask filename
+        ID = request.POST.get('ID')
+        # weight of traces, which defines the spacing between samples in RGR
+        weight_ = int(request.POST.get('weight'))
+
+        # theta_m: regulates weight of color-similarity vs spatial-proximity
+        # divide by to adjust from [1,10] to [.1,1]
+        m = float(request.POST.get('m'))/10
+
+        # remove older files
+        for filename in glob.glob("static/"+username+"/refined*"):
+            os.remove(filename)
+
+        # open image URL
+        img = readLocalImg(url)
+        # download image and convert to numpy array
+        img = np.asarray(img, dtype="uint8")
+
+        # call RGR and get mask as return
+        im_color = startRGR(username,img,userAnns,ID,weight_,m,url,mergePreSeg)
+        askForAnns = False
     else:
-        ranking = np.load(filename)
+        askForAnns = True
 
-        usr_idx, = np.where(ranking[:,0] == username)
+    request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
+    # return render(request, 'freelabel/main.html')
+    return HttpResponse(json.dumps({'askForAnns': askForAnns}), content_type="application/json")
 
-        if len(usr_idx) == 0:
-            if nextId > 0:
-                this_ = np.column_stack((username,total_/nextId,nextId, total_))
-                ranking = np.append(ranking,this_,axis=0)        
-            else:
-                this_ = np.column_stack((username,0,0,0))
-                ranking = np.append(ranking,this_,axis=0)   
+def writeCustomLog(request):
 
-        else:
-            if nextId > 0:
-                ranking[usr_idx,1] = total_/nextId
-                ranking[usr_idx,2] = nextId
-                ranking[usr_idx,3] = total_
-            else:
-                ranking[usr_idx,1] = 0
-                ranking[usr_idx,2] = 0
-                ranking[usr_idx,3] = 0
-
-        # ugly piece of code that sorts ranking in descending order
-        ranking = ranking[ranking[:,1].argsort()][::-1]      
-        np.save('static/lists/ranking.npy', ranking)    
-
-    rankusers_ = list(ranking[:,0])
-    rankscores_ = list(ranking[:,1])
-    rankimgs_ = list(ranking[:,2])
-    ranktotal_ = list(ranking[:,3])
-
-    return HttpResponse(json.dumps({'imgList': imgList,'gtList': gtList,'catsList': catsList, \
-                                    'bboxList': bboxList,'clsList': clsList,'idsList': idsList,\
-                                    'nextId':nextId,'scoreTotal': total_,'username': username,\
-                                    'rankusers_':rankusers_,'rankscores_':rankscores_,'rankimgs_':rankimgs_, 'ranktotal_':ranktotal_}), \
-                                    content_type="application/json")
-
-def playVideo(request):
-    return render(request, 'freelabel/video.html')
-
-def shuffleList(filename,lst_length):
-    str_ = '';
-
-    shuffled_ = np.random.permutation(lst_length)
-    np.savetxt(filename, shuffled_, fmt='%d', delimiter=',')     
-
-def bboxCall(request):
-    # download url as a local file
-    urlBB = request.POST.get('BB')
-    ur.urlretrieve(urlBB, "static/BB.txt")
-
-    # read lines of this file
-    f = open('static/BB.txt', 'r')
-    bbList = f.readlines()
-    f.close()
-
-    # send back as json
-    return HttpResponse(json.dumps({'bbList': bbList}), content_type="application/json")
-
-def writeLog(request):
-
+    # get the username
     username = request.user.username
 
     jsonAnns = json.loads(request.session['userAnns'])
@@ -172,33 +238,34 @@ def writeLog(request):
 
     # total score and next i in list of images to load
     next_i = int(request.POST.get('next_i'))  
-    total_ = int(request.POST.get('scoreTotal'))
-    
-    # update file accordingly
-    filename = 'static/lists/info_' + username + '.txt'
-    np.savetxt(filename,[next_i,total_], fmt='%d', delimiter=',')     
+    filename = 'static/lists/infoCustom_' + username + '.txt'
+    np.savetxt(filename,[next_i], fmt='%d', delimiter=',')       
 
     #id of image
-    id_image = request.POST.get('id_image')  
+    img_file = request.POST.get('img_file')  
 
     # get newest ID of file once window reload  
-    file_ID = username;
+    # file_ID = request.POST.get('fileID')    
+    file_ID = username
     # save .mat with final mask and annotations, just in case we need it afterwards
     finalMask = np.load('static/'+username+'/lastmask.npy')
     
-    directory = 'static/log/masks/' + file_ID  
+    setname = request.POST.get('datasetname')
+
+    directory = 'static/log/masks/' + file_ID + '/' + setname  
 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    filename = directory + '/' + id_image + '.mat';
+    filename = directory + '/' + os.path.basename(img_file) + '.mat'
     sio.savemat(filename, mdict={'finalMask': finalMask, 'anns': anns})       
 
     # compute percentage of how many pixels were annotated by the user
     total_anns = np.count_nonzero(anns)
     total_anns = 100*(total_anns/anns.size)
 
-    filename = 'static/log/Log_' + username + '.txt'
+    # filename = 'static/log/Results_' + file_ID + '.txt'
+    filename = 'static/log/Log'+setname+'_' + username + '.txt'
 
     # if file exists, only append data
     if not os.path.exists(filename):
@@ -207,10 +274,11 @@ def writeLog(request):
 
     #time spend
     time = request.POST.get('time')
-    maxTime = request.POST.get('maxTime')
 
     #number of traces
     trace_number = request.POST.get('trace_number')
+
+    #length of all traces
 
     #number of clicks on "refine"
     refine_number = request.POST.get('refine_number')
@@ -218,75 +286,41 @@ def writeLog(request):
     #accuracies obtained   
     accuracies = request.POST.getlist('accuracies[]')
 
-    #scores obtained   
-    scores = request.POST.getlist('scores[]')
-    timeBonus = request.POST.get('timeBonus')
-    finalScore = request.POST.get('finalScore')
-
     # string containing all info for this image: 
-    str_ = str(id_image) + ';' +  str(time) + ';'+ str(maxTime) + \
-           ';' + str(trace_number) + ';' +  '%.3f'%(float(total_anns)) + ';' + \
-           str(refine_number) + ';' + str(finalScore) + ';' + str(timeBonus) + ';' \
+    str_ = str(os.path.basename(img_file)) + ';' +  str(time) + ';' + \
+           str(trace_number) + ';' +  '%.3f'%(float(total_anns)) + ';' + \
+           str(refine_number)\
 
-    # get array of accuracies for each class + average. If empty (i.e. no refinement performed yet)
     if accuracies is None:
         accuracies = 0
 
     for acc_ in accuracies:
         str_ = str_ + ',' + '%.3f'%(float(acc_))
 
-    str_ = str_ + ';'
-
-    for score_ in scores:
-        str_ = str_ + ',' + score_
-
+    # get array of accuracies for each class + average. If empty (i.e. no refinement performed yet)
     str_ = str_ + '\n'
 
     a=open(filename, "a+")
     a.write(str_)
     a.close()
 
-    # remove older files
+     # remove older files
     for filename in glob.glob("static/"+username+"/GTimage*"):
         os.remove(filename) 
 
-    # convert .mat GT into a .png image
-    im_color = saveGTasImg(username,id_image);    
+    return render(request, 'freelabel/main.html')    
 
-    training_ = request.POST.get('trainingFlag')
+####
+def playVideo(request):
+    return render(request, 'freelabel/video.html')
 
-    # update ranking if the call is coming from "play" page
-    # move on in case it's coming from "training"
-    if training_ is None:
-        # update ranking npy array
-        filename = 'static/lists/ranking.npy'
-        ranking = np.load(filename)
+def shuffleList(filename,lst_length):
+    str_ = ''
 
-        usr_idx = np.where(ranking[:,0] == username)    
+    shuffled_ = np.random.permutation(lst_length)
+    np.savetxt(filename, shuffled_, fmt='%d', delimiter=',')
+    return shuffled_
 
-        if not usr_idx:
-            this_ = np.column_stack((username,total_/next_i,next_i, total_))
-            ranking = np.append(ranking,this_,axis=0)     
-        else:
-            usr_idx = usr_idx[0]
-            ranking[usr_idx,1] = total_/next_i        
-            ranking[usr_idx,2] = next_i
-            ranking[usr_idx,3] = total_    
-
-        # ugly piece of code that sorts ranking in descending order
-        ranking = ranking[ranking[:,1].argsort()][::-1]      
-        np.save('static/lists/ranking.npy', ranking)   
-
-        # return render(request, 'freelabel/main.html')
-        rankusers_ = list(ranking[:,0])
-        rankscores_ = list(ranking[:,1])
-        rankimgs_ = list(ranking[:,2])
-        ranktotal_ = list(ranking[:,3])
-
-        return HttpResponse(json.dumps({'rankusers_':rankusers_,'rankscores_':rankscores_,'rankimgs_':rankimgs_, 'ranktotal_':ranktotal_}),content_type="application/json") 
-    else:
-        return render(request, 'freelabel/train.html') 
-        
 # initialize array with user traces for this iamge
 def initanns(request):
 
@@ -311,60 +345,8 @@ def initanns(request):
     request.session.save()
     # get bounding boxes
     # download url as a local file
-    urlBB = request.POST.get('BB')
-
-    if urlBB is None:
-        return render(request, 'freelabel/flower.html') 
-    else:
-        ur.urlretrieve(urlBB, "static/BB.txt")
-
-        # read lines of this file
-        f = open('static/BB.txt', 'r')
-        bbList = f.readlines()
-        f.close()
-
-        # send back as js
-        return HttpResponse(json.dumps({'bbList': bbList}), content_type="application/json")            
-  
-
-def refine(request): 
-    # get array of user traces from json 
-    jsonAnns = json.loads(request.session['userAnns'])
-    # convert it to numpy
-    userAnns = np.array(jsonAnns["userAnns"])
-
-    # get coordinates of trace to be drawn
-    traces = request.POST.getlist('trace[]')   
-
-    userAnns = drawTrace(userAnns,traces)
-
-    username = request.user.username
-
-    # get URL of image
-    url = request.POST.get('img')
-    # get random ID that defines mask filename
-    ID = request.POST.get('ID')
-    # weight of traces, which defines the spacing between samples in RGR
-    weight_ = int(request.POST.get('weight'))
-
-    # theta_m: regulates weight of color-similarity vs spatial-proximity
-    # divide by to adjust from [1,10] to [.1,1] 
-    m = float(request.POST.get('m'))/10
-
-    # remove older files
-    for filename in glob.glob("static/"+username+"/refined*"):
-        os.remove(filename) 
-
-    # open image URL
-    resp = ur.urlopen(url)
-    # download image and convert to numpy array
-    img = np.asarray(bytearray(resp.read()), dtype="uint8")    
-
-    # call RGR and get mask as return 
-    im_color = startRGR(username,img,userAnns,ID,weight_,m)   
-
-    request.session['userAnns'] = json.dumps({'userAnns': userAnns}, cls=NumpyEncoder)
-
+    #
+    # return HttpResponse(json.dumps({'bbList': bbList}), content_type="application/json")
     return render(request, 'freelabel/main.html')
 
 
@@ -407,22 +389,33 @@ def drawTrace(userAnns,traces):
         # each trace "coordinate" contains: x,y,thickness,category,
         # so a line is defined by (trace[i],trace[i+1])--(trace[i+4],trace[i+5]), 
         # with thickness=trace[i+2] (or trace[i+6]) and category=trace[i+3](or trace[i+7])               
-        pts = np.empty(shape=[0, 2]);
-        for i in range(0,len(trace)-5,4):            
+        pts = np.empty(shape=[0, 2])
+        for i in range(0,len(trace)-6,5):
             
             # trace line between coordinates
             c0 = int(trace[i]) # i.e. x0
             r0 = int(trace[i+1]) # i.e. y0
             
-            c1 = int(trace[i+4])
-            r1 = int(trace[i+5])
+            c1 = int(trace[i+5])
+            r1 = int(trace[i+6])
 
             pts = np.append(pts,[[c0,r0]],axis=0)
             pts = np.append(pts,[[c1,r1]],axis=0)
 
             thick = int(trace[i+2])
+            # workaround to the fact that JS variable can't handle negatives, but -1 indicates to CV to fill
+            if thick > 8:
+                thick = -1
             catId = int(trace[i+3])
-        userAnns = tracePolyline(img,pts,catId,thick)    
+            type_ = int(trace[i+4])
+
+        if type_ == 0:
+            userAnns = tracePolyline(img,pts,catId,thick)
+        else:
+            if type_ == 1:
+                userAnns = traceCircle(img, pts, catId,thick)
+            else:
+                userAnns = traceRect(img,pts,catId,thick)
 
     return userAnns 
 

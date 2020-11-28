@@ -11,16 +11,13 @@
         <h3>FreeLabel annotation tool </h3> 
 
         {% if user.is_authenticated %}
-            <h3> Hello {{ user.username }}!</h3>        
-           
-            <h2>First time around? Please do the training session <br />(it takes less than 10min)! </h2>        
-            <a href="/freelabel/train/">Training</a><br />
-            
+            <h3> Hello {{ user.username }}!</h3>
 
-            <h2>Already experienced? Go ahead and play </h2>        
-            <a href="/freelabel/play/">Play!</a></br>
-            <a href="/freelabel/playFlowers/">Go directly to flowers</a><br />
+            <h2>Annotate a custom dataset</h2>
+            <a href="/freelabel/playCustomScratch/">From scratch</a><br />
+
             <a href="/freelabel/logout/">Logout</a><br />
+
         {% else %}
             <strong>Please register if you don't have account!</strong><br />
 
@@ -49,26 +46,88 @@
             </form>           
         {% endif %}      
 
-        <h3>Instructions for Pilot experiments with MTurk </h3>
-        <h4>Goal: Get the highest accuracy % that you can, as quick as possible. </h4>
-        <img id="scoreRules" src="/static/images/scoreRules.png" style="height: 300px">        
-        <ul>
-        <li> Accuracy is the base factor for your score, while time is a bonus factor. </li>
-        <li> Some images are hard, some are very easy. Take your time and learn from the hard ones, soon they will all look much easier! </li>
-        <li> Images with more objects are harder, but the bonus time decays much slower. Don't give up, take your time and profit from them! </li>
+        <h3>General information </h3>
+        <li> Output files are saved under: (freelabelpath)/static/log/masks/(username)/(dataset)/*.mat</li>
+        <li> Log files are saved under: (freelabelpath)/static/log(dataset)_(username).txt </li>
+        <li> Each row in Log file contain: file name; annotation time [s]; % of image area that was annotated; no. of growing calls </li>
         </ul>
 
-        <ol>
-            <li>Playing a game (Training + 6 images,~20min)-&nbsp;<label>Task preview - Phase 1:</label>&nbsp;<a class="dont-break-out" href="https://drive.google.com/uc?id=1zS5SStaqjWHGUVue1USvoKPSUT2ogo4n" style="background-color: rgb(255, 255, 255);" target="_blank">Phase 1 example</a><br />
-            At first, your goal is to crop (segment) the objects indicated for each image. To score high, the main factor is that your masks must fit the objects tightly (high accuracy). Plus, there is bonus for speed: the quicker you do it, the higher your score. A score ranking is constantly updated with the best avg. scores obtained so far. But don&#39;t worry, it is just a reference (and extra motivation), your payment is NOT conditioned on your position in this ranking.<br />
-            <br />
-            <span style="color:#FF0000;"><strong>Minimum accuracy per image:</strong></span>&nbsp;the &quot;Finish&quot; for moving to the next image becomes available only if your segmentation is at least 90% accurate for each category. You can skip up to 3 images, in case they look impossible to finish.<br />
-            <br />
-            To get familiar with the commands, please <strong>make sure to carefully follow the Training session shown at the beginning</strong>.&nbsp;<br />
-            &nbsp;</li>
-            <li>Annotating different images with flowers (16 images, ~60min) -&nbsp;<label>Task preview - Phase 2:</label>&nbsp;<a class="dont-break-out" href="https://drive.google.com/uc?id=1Ad-FPrva1fjyQCjSy2q05AGVD5IXa613" style="background-color: rgb(255, 255, 255);" target="_blank">Phase 2 example</a><br />
-            After playing the game, you will be requested to annotate images with flowers, without any score/feedback. However, <strong>your avg. accuracy for the last 4 images is constantly verified. If it&#39;s not higher than 80%, you will have to redo these last 4 images</strong>. Pay close attention to examples and try to get masks that fit all visible flowers as tightly as possible.&nbsp;</li>
-        </ol>
+        <body>
+            <div style="width: 15%; height: 100%; float:left;">
+                <h3> Available tools </h3>
+                <ul>
+                    <li> <img id="pencilIcon" src="/static/images/pencil4.png" style="height: 30px"><b> Pencil (P)</b></li>
+                    <img id="rectIcon" src="/static/images/pencil.gif" style="height: 150px">
+                    <h4></h4>
+                        <ul>
+                            <li>Freehand scribbles: faster, less precise</li>
+                        </ul>
+                    <h4></h4>
+                    <li> <img id="rectIcon" src="/static/images/rect4.png" style="height: 30px"><b> Rectangle (R)</b></li>
+                        <img id="rectIcon" src="/static/images/rect.gif" style="height: 150px">
+                </ul>
+            </div>
+            <div style="width: 15%; height: 100%; float:left;">
+                <h3>  (Keyboard shortcuts)</h3>
+                <ul>
+                    <li> <img id="lineIcon" src="/static/images/line4.png" style="height: 30px"><b> Line (L)</b></li>
+                        <img id="rectIcon" src="/static/images/line.gif" style="height: 150px">
+                        <h4></h4>
+                        <ul>
+                            <li>Straight lines: more precise (e.g., thinner structures)</li>
+                        </ul>
+                    <li> <img id="circIcon" src="/static/images/circle4.png" style="height: 30px"><b> Circle (C)</b></li>
+                            <img id="rectIcon" src="/static/images/circle.gif" style="height: 150px">
+                </ul>
+            </div>
+            <h3> Styles </h3>
+            <div style="width: 20%; height: 100%; float:left;">
+                <ul>
+                    <li> For all tools <img id="pencilIcon" src="/static/images/pencil8.png" style="height: 30px">
+                        <img id="lineIcon" src="/static/images/line8.png" style="height: 30px">
+                        <img id="rectIcon" src="/static/images/rect8.png" style="height: 30px">
+                        <img id="circIcon" src="/static/images/circle8.png" style="height: 30px"></li>  <br>
+                        <ul>
+                            <li>1,2,4 and 8px wide options</li>
+                        </ul>
+                    <h4></h4>
+                    <li> For Rectangle and Circle</li>  <br>
+                        <ul>
+                            <li> Hollow <img id="rectIcon" src="/static/images/rect8.png" style="height: 30px">
+                                <img id="circIcon" src="/static/images/circle8.png" style="height: 30px"> </li>
+                            <li> Filled <img id="rectIcon" src="/static/images/rect9.png" style="height: 30px">
+                                <img id="circIcon" src="/static/images/circle9.png" style="height: 30px"> </li>
+                        </ul>
+                </ul>
+                <h3> Eraser </h3>
+                <ul>
+                    <li> Available for all tools as a category <img id="pencilIcon" src="/static/images/pencil8.png" style="height: 30px">
+                        <img id="lineIcon" src="/static/images/line8.png" style="height: 30px">
+                        <img id="rectIcon" src="/static/images/rect8.png" style="height: 30px">
+                        <img id="circIcon" src="/static/images/circle8.png" style="height: 30px"></li>  <br>
+                            <li> Filled Circle and Rectangle are particularly useful as eraser <img id="rectIcon" src="/static/images/rect9.png" style="height: 30px">
+                            <img id="circIcon" src="/static/images/circle9.png" style="height: 30px"> </li>
+                    <h4></h4>
+                </ul>
+            </div>
+            <h3> Grow traces </h3>
+            <div style="width: 20%; height: 100%; float:left;">
+                    <button type="button">Grow traces</button> Propagate traces onto image
+                    <img id="rectIcon" src="/static/images/refine.gif" style="height: 200px">
+                <h3> Categories </h3>
+                    <li> <img id="pencilIcon" src="/static/images/addCat.png" style="height: 30px"></li>
+                    <button type="button">+</button><b> Adds new categories </b>
+                    <h4></h4>
+                        <ul>
+                            <li>Up to 20 categories + background</li>
+                            <li>Colors automatically assigned according to PASCAL VOC encoding</li>
+                        </ul>
+                </ul>
+            </div>
+        </body>
+
+        </ul>
+
 
     </body>
 </html>

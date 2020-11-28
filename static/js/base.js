@@ -16,13 +16,25 @@
       element.value = "eraser"
       var event = new Event('change');
       element.dispatchEvent(event);
-    } else if (e.which == 76){  //L,l
+    } else if (e.which == 67){  //C,c
+      var element = document.getElementById('dtool');
+      element.value = "circle"
+      var event = new Event('change');
+      element.dispatchEvent(event);
+    }
+     else if (e.which == 82){  //R,r
+      var element = document.getElementById('dtool');
+      element.value = "rect"
+      var event = new Event('change');
+      element.dispatchEvent(event);
+    }
+    else if (e.which == 76){  //L,l
       var element = document.getElementById('dtool');
       element.value = "line"
       var event = new Event('change');
       element.dispatchEvent(event);
-    } else if (e.which == 82 || e.which == 71){  //R,r or G,g
-      callRefine();
+    } else if ( e.which == 71){  //R,r or G,g
+      callRefineCustom();
     }
     else if (e.which == 38){//up arrow
       e.preventDefault(); // Prevent the default action
@@ -243,7 +255,7 @@
         // hide Refine button to avoid double call
         document.getElementById("btnRefine").style.visibility = "hidden";          
         // hide Undo button and reactivate it only if traces.length > 0 
-        document.getElementById("btnUndo").style.visibility = "hidden";
+        // document.getElementById("btnUndo").style.visibility = "hidden";
 
         // get pointer to image on bottom canvas
         var img = document.getElementById("initial");
@@ -613,6 +625,15 @@
 
   // The event handler for any changes made to the tool selector.
   function ev_tool_change (ev) {
+    var tool_ = document.getElementById("dtool").value
+    if( (tool_ == "circle") || (tool_ == "rect") )
+      document.getElementById("optFill").style.visibility = "visible"
+    else{
+      document.getElementById("optFill").style.visibility = "hidden"
+      if(document.getElementById('dsize').value > 8)
+        document.getElementById('dsize').value = 8;
+    }
+
     document.getElementById("dtool").blur();
     if (tools[this.value]) {
       tool = new tools[this.value]();
@@ -629,13 +650,20 @@
 
   // The event handler for any changes made to the color selector.
   function ev_size_change (ev) {
-    if(document.getElementById("dtool").value == "pencil")
-      document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";
-    else if (document.getElementById("dtool").value == "eraser")
-      document.body.style.cursor = "url('/static/images/eraser"+document.getElementById('dsize').value+".png') 0 0, default";
-      else if(document.getElementById("dtool").value == "line")
-        document.body.style.cursor = "url('/static/images/line"+document.getElementById('dsize').value+".png') 0 0, default";
-
+    if(document.getElementById('dsize').value <= 8){
+      if(document.getElementById("dtool").value == "pencil")
+        document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";
+      else if (document.getElementById("dtool").value == "eraser")
+        document.body.style.cursor = "url('/static/images/eraser"+document.getElementById('dsize').value+".png') 0 0, default";
+        else if(document.getElementById("dtool").value == "line")
+          document.body.style.cursor = "url('/static/images/line"+document.getElementById('dsize').value+".png') 0 0, default";
+    }
+    if(document.getElementById("dtool").value == "circle") {
+      document.body.style.cursor = "url('/static/images/circle" + document.getElementById('dsize').value + ".png') 0 0, default";
+      }
+      else if(document.getElementById("dtool").value == "rect") {
+        document.body.style.cursor = "url('/static/images/rect" + document.getElementById('dsize').value + ".png') 0 0, default";
+      }
 
     document.getElementById("dsize").blur();
     if (sizes[this.value]) {
@@ -671,230 +699,78 @@
 
   function size_choose(){
     size_select = document.getElementById('dsize').value;
-
     temp_context.lineWidth = size_select;
   }
 
-  // set global variable and trace color with current selected thickness
+// set global variable and trace color with current selected thickness
   function color_choose(){
       color_select = document.getElementById('dcolor').value;
-    if(color_select == 1)
+    if(color_select == 1){
       temp_context.strokeStyle = 'rgb(0,0,0)';
-    else if(color_select == 2)
+      temp_context.fillStyle = 'rgb(0,0,0)';}
+    else if(color_select == 2){
       temp_context.strokeStyle = 'rgb(128,0,0)';
-    else if(color_select == 3)
+      temp_context.fillStyle = 'rgb(128,0,0)';}
+    else if(color_select == 3){
       temp_context.strokeStyle = 'rgb(0,128,0)';
-    else if(color_select == 4)
+      temp_context.fillStyle = 'rgb(0,128,0)';}
+    else if(color_select == 4){
       temp_context.strokeStyle = 'rgb(128,128,0)';
-    else if(color_select == 5)
+      temp_context.fillStyle = 'rgb(128,128,0)';}
+    else if(color_select == 5){
       temp_context.strokeStyle = 'rgb(0,0,128)';
-    else if(color_select == 6)
+      temp_context.fillStyle = 'rgb(0,0,128)';}
+    else if(color_select == 6){
       temp_context.strokeStyle = 'rgb(128,0,128)';
-    else if(color_select == 7)
+      temp_context.fillStyle = 'rgb(128,0,128)';}
+    else if(color_select == 7){
       temp_context.strokeStyle = 'rgb(0,128,128)';
-    else if(color_select == 8)
+      temp_context.fillStyle = 'rgb(0,128,128)';}
+    else if(color_select == 8){
       temp_context.strokeStyle = 'rgb(128,128,128)';
-    else if(color_select == 9)
+      temp_context.fillStyle = 'rgb(128,128,128)';}
+    else if(color_select == 9){
       temp_context.strokeStyle = 'rgb(64,0,0)';
-    else if(color_select == 10)
+      temp_context.fillStyle = 'rgb(64,0,0)';}
+    else if(color_select == 10){
       temp_context.strokeStyle = 'rgb(192,0,0)';
-    else if(color_select == 11)
+      temp_context.fillStyle = 'rgb(192,0,0)';}
+    else if(color_select == 11){
       temp_context.strokeStyle = 'rgb(64,128,0)';
-    else if(color_select == 12)
+      temp_context.fillStyle = 'rgb(64,128,0)';}
+    else if(color_select == 12){
       temp_context.strokeStyle = 'rgb(192,128,0)';
-    else if(color_select == 13)
+      temp_context.fillStyle = 'rgb(192,128,0)';}
+    else if(color_select == 13){
       temp_context.strokeStyle = 'rgb(64,0,128)';
-    else if(color_select == 14)
+      temp_context.fillStyle = 'rgb(64,0,128)';}
+    else if(color_select == 14){
       temp_context.strokeStyle = 'rgb(192,0,128)';
-    else if(color_select == 15)
+      temp_context.fillStyle = 'rgb(192,0,128)';}
+    else if(color_select == 15){
       temp_context.strokeStyle = 'rgb(64,128,128)';
-    else if(color_select == 16)
+      temp_context.fillStyle = 'rgb(64,128,128)';}
+    else if(color_select == 16){
       temp_context.strokeStyle = 'rgb(192,128,128)';
-    else if(color_select == 17)
+      temp_context.fillStyle = 'rgb(192,128,128)';}
+    else if(color_select == 17){
       temp_context.strokeStyle = 'rgb(0,64,0)';
-    else if(color_select == 18)
+      temp_context.fillStyle = 'rgb(0,64,0)';}
+    else if(color_select == 18){
       temp_context.strokeStyle = 'rgb(128,64,0)';
-    else if(color_select == 19)
+      temp_context.fillStyle =  'rgb(128,64,0)';}
+    else if(color_select == 19){
       temp_context.strokeStyle = 'rgb(0,192,0)';
-    else if(color_select == 20)
+      temp_context.fillStyle = 'rgb(0,192,0)';}
+    else if(color_select == 20){
       temp_context.strokeStyle = 'rgb(128,192,0)';
-    else if(color_select == 21)
+      temp_context.fillStyle =  'rgb(128,192,0)';}
+    else if(color_select == 21){
       temp_context.strokeStyle = 'rgb(0,64,128)';
-    else
-      temp_context.strokeStyle = 'grey';
-  }
-
-  // eraser tool
-  tools.eraser = function() {
-    var tool = this;
-    this.started = false;
-    var clicked = false;
-
-
-    // change mouse icon to eraser
-    document.body.style.cursor = "url('/static/images/eraser"+document.getElementById('dsize').value+".png') 0 0, default";
-    // document.body.style.cursor = "url('/static/images/eraser.png') 10 25, default";
-
-    // z contains the desired category (color) for trace. For eraser, that means 0
-    var z = 0;
-
-    this.touchstart = function (ev) {
-        trace = [];
-        // this prevents the page to scroll while drawing on temp_canvas
-        if (ev.target == temp_canvas) {
-          ev.preventDefault();
-        }
-
-        // get mouse coordinates
-        var x = ev._x;
-        var y = ev._y;
-
-        size_choose()
-        thick = temp_context.lineWidth;
-        trace.push(x,y,thick,z);
-
-        // starts trace
-        temp_context.beginPath();
-        temp_context.moveTo(ev._x, ev._y);
-        tool.started = true;
-    };
-
-    this.mousedown = function (ev) {
-        trace = [];
-        clicked = true
-
-        // get mouse coordinates
-        var x = ev._x;
-        var y = ev._y;
-
-        size_choose()
-        thick = temp_context.lineWidth;
-        trace.push(x,y,thick,z);
-
-        // starts trace
-        temp_context.beginPath();
-        temp_context.moveTo(ev._x, ev._y);
-        tool.started = true;
-    };
-
-
-    this.touchmove = function (ev) {
-      if (tool.started) {
-        // this prevents the page to scroll while drawing on temp_canvas
-        if (ev.target == temp_canvas) {
-          ev.preventDefault();
-        }
-
-        size_choose()
-
-        var x = ev._x;
-        var y = ev._y;
-
-        // for eraser, we draw on top of any previous trace with the white color
-        temp_context.strokeStyle = 'white';
-        temp_context.globalCompositeOperation="destination-out";
-        temp_context.lineTo(x, y);
-        temp_context.stroke();
-
-        thick = temp_context.lineWidth;
-
-        // add the corresponding (coordinates,thickness,category) to variable that
-        // will be passed to python to update the actual python array of traces
-        trace.push(x,y,thick,z);
-
-        //when finger touch move out of canvas, stop trace.
-        document.getElementById("imageTemp").ontouchleave = function(){touchEnd()};
-
-        function touchEnd() {
-          tool.started = false;
-          //pushUndo(trace)
-          traces.push(trace.toString())
-          document.getElementById("btnUndo").style.visibility = "visible";
-          img_update();
-          document.getElementById("imageTemp").ontouchleave = function(){}          
-
-          }
-
-      }
-    };
-
-    this.mousemove = function (ev) {
-      if (tool.started) {
-
-        size_choose();
-
-        var x = ev._x;
-        var y = ev._y;
-
-        temp_context.strokeStyle = 'white';
-        temp_context.globalCompositeOperation="destination-out";
-        temp_context.lineTo(x, y);
-        temp_context.stroke();
-
-        thick = temp_context.lineWidth;
-
-        // add the corresponding (coordinates,thickness,category) to variable that
-        // will be passed to python to update the actual python array of traces
-        trace.push(x,y,thick,z);
-
-        //when mouse move out of canvas, stop trace.
-        // mouse out is triggered when clicked, so we use clicked to double check
-        document.getElementById("imageTemp").onmouseout = function(){
-          if (clicked == true){
-            clicked = false;
-            mouseOut();
-
-          }
-        };
-
-        function mouseOut() {
-            tool.started = false;
-            //pushUndo(trace)
-            traces.push(trace.toString())
-            document.getElementById("btnUndo").style.visibility = "visible";
-            img_update();
-            document.getElementById("imageTemp").onmouseout = function(){}
-
-          }
-
-      }
-    };
-
-
-    this.touchend = function (ev) {
-      if (tool.started) {
-        // this prevents the page to scroll while drawing on temp_canvas
-        if (ev.target == temp_canvas) {
-          ev.preventDefault();
-        }
-
-        // tool.touchmove(ev);
-        tool.started = false;
-        //pushUndo(trace)
-        traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
-
-        img_update();
-        trace_number += 1;
-
-      }
-    };
-
-
-    this.mouseup = function (ev) {
-      clicked = false;
-
-      if (tool.started) {
-        // tool.mousemove(ev);
-        tool.started = false;
-        //pushUndo(trace)
-        traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
-
-        img_update();
-        trace_number += 1;
-      }
-    };
+      temp_context.fillStyle = 'rgb(0,64,128)';}
+    else{
+      temp_context.strokeStyle = 0;
+      temp_context.fillStyle = 0;    }
   }
 
   // The drawing pencil.
@@ -902,7 +778,13 @@
     var tool = this;
     this.started = false;
     var clicked = false;
+    var traceType = 0;
 
+    var z = document.getElementById('dcolor').value;
+    // if (z == 0)
+    //   document.body.style.cursor = "url('/static/images/eraser"+document.getElementById('dsize').value+".png') 0 0, default";
+    // else
+    //   document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";
 
     document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";
 
@@ -911,8 +793,6 @@
     this.touchstart = function (ev) {
         trace = [];
 
-        var z = document.getElementById('dcolor').value;
-
         // this prevents the page to scroll while drawing on temp_canvas
         if (ev.target == temp_canvas) {
           ev.preventDefault();
@@ -923,8 +803,7 @@
 
         size_choose()
         thick = temp_context.lineWidth;
-        trace.push(x,y,thick,z);
-
+        trace.push(x,y,thick,z,traceType);
 
         temp_context.beginPath();
         temp_context.moveTo(ev._x, ev._y);
@@ -936,8 +815,6 @@
     this.mousedown = function (ev) {
         trace = [];
 
-        var z = document.getElementById('dcolor').value;
-
         clicked = true;
 
         var x = ev._x;
@@ -945,7 +822,7 @@
 
         size_choose()
         thick = temp_context.lineWidth;
-        trace.push(x,y,thick,z);
+        trace.push(x,y,thick,z,traceType);
 
 
         temp_context.beginPath();
@@ -980,15 +857,14 @@
 
         // add the corresponding (coordinates,thickness,category) to variable that
         // will be passed to python to update the actual python array of traces
-        trace.push(x,y,thick,z);
+        trace.push(x,y,thick,z,traceType);
 
         document.getElementById("imageTemp").ontouchleave = function(){touchLeave()};
 
         function touchLeave() {
             tool.started = false;
-                        //pushUndo(trace)
             traces.push(trace.toString())
-            document.getElementById("btnUndo").style.visibility = "visible";
+            // document.getElementById("btnUndo").style.visibility = "visible";
             img_update();
             document.getElementById("imageTemp").ontouchleave = function(){}
           }
@@ -1010,7 +886,13 @@
         var y = ev._y;
         var z = document.getElementById('dcolor').value;
 
-        temp_context.globalCompositeOperation="source-over";
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
         temp_context.lineTo(ev._x, ev._y);
         temp_context.stroke();
 
@@ -1018,7 +900,7 @@
 
         // add the corresponding (coordinates,thickness,category) to variable that
         // will be passed to python to update the actual python array of traces
-        trace.push(x,y,thick,z);
+        trace.push(x,y,thick,z,traceType);
 
         // mouse out is triggered when clicked, so we use clicked to double check
         document.getElementById("imageTemp").onmouseout = function(){
@@ -1031,7 +913,7 @@
           clicked = false;
                     //pushUndo(trace)
           traces.push(trace.toString())
-          document.getElementById("btnUndo").style.visibility = "visible";
+          // document.getElementById("btnUndo").style.visibility = "visible";
           img_update();
           document.getElementById("imageTemp").ontouchleave = function(){}
         }
@@ -1052,7 +934,7 @@
         tool.started = false;
         //pushUndo(trace)
         traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
 
@@ -1076,7 +958,7 @@
         //pushUndo(trace)
 
         traces.push(trace.toString())        
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
         img_update();        
 
         trace = [];
@@ -1091,12 +973,13 @@
     this.started = false;
     var clicked = false;
 
-    var x,y; // current mouse coordinates
-    var initX,initY; // initial mouse coordinates for this line
-
+    var x, y; // current mouse coordinates
+    var initX, initY; // initial mouse coordinates for this line
+    var traceType = 0;
     // change mouse icon to line tool
     // document.body.style.cursor = "crosshair";
     document.body.style.cursor = "url('/static/images/line"+document.getElementById('dsize').value+".png') 0 0, default";
+
 
     // the mouse events are trickier for this tool, since we
     function mouseOut() {
@@ -1107,20 +990,21 @@
       thick = temp_context.lineWidth;
       var z = document.getElementById('dcolor').value;
 
-      trace.push(x,y,thick,z);
-            //pushUndo(trace)
+      trace.push(x, y, thick, z,traceType);
+      //pushUndo(trace)
 
       traces.push(trace.toString())
-      document.getElementById("btnUndo").style.visibility = "visible";
+      // document.getElementById("btnUndo").style.visibility = "visible";
 
       img_update();
-      document.getElementById("imageTemp").ontouchleave = function(){}
+      document.getElementById("imageTemp").ontouchleave = function () {
+      }
     }
 
     // This is called when you start holding down the touch.
     // This starts the pencil drawing.
     this.touchstart = function (ev) {
-      trace = [];  
+      trace = [];
       // this prevents the page to scroll while drawing on temp_canvas
       if (ev.target == temp_canvas) {
         ev.preventDefault();
@@ -1131,7 +1015,7 @@
 
       tool.started = true;
 
-      temp_context.globalCompositeOperation="source-over";
+      temp_context.globalCompositeOperation = "source-over";
 
       color_choose();
       size_choose();
@@ -1142,7 +1026,7 @@
 
       // add the corresponding (coordinates,thickness,category) to variable that
       // will be passed to python to update the actual python array of traces
-      trace.push(ev._x,ev._y,thick,z);
+      trace.push(ev._x, ev._y, thick, z,traceType);
 
       initX = ev._x;
       initY = ev._y;
@@ -1150,8 +1034,8 @@
       cpyCtx = temp_context.getImageData(0, 0, temp_context.canvas.width, temp_context.canvas.height);
 
       // mouse out is triggered when clicked, so we use clicked to double check
-      document.getElementById("imageTemp").onmouseout = function(){
-        if (tool.started && clicked == true){
+      document.getElementById("imageTemp").onmouseout = function () {
+        if (tool.started && clicked == true) {
           clicked = false;
           mouseOut()
         }
@@ -1170,7 +1054,7 @@
 
       tool.started = true;
 
-      temp_context.globalCompositeOperation="source-over";
+      temp_context.globalCompositeOperation = "source-over";
 
       color_choose();
       size_choose();
@@ -1180,14 +1064,14 @@
       // add the corresponding (coordinates,thickness,category) to variable that
       // will be passed to python to update the actual python array of traces
       thick = temp_context.lineWidth;
-      trace.push(ev._x,ev._y,thick,z);
+      trace.push(ev._x, ev._y, thick, z,traceType);
 
       initX = ev._x;
       initY = ev._y;
 
       // mouse out is triggered when clicked, so we use clicked to double check
-      document.getElementById("imageTemp").onmouseout = function(){
-        if (tool.started && clicked == true){
+      document.getElementById("imageTemp").onmouseout = function () {
+        if (tool.started && clicked == true) {
           mouseOut()
           clicked = false;
         }
@@ -1225,8 +1109,15 @@
         y = ev._y;
 
         var z = document.getElementById('dcolor').value;
-        // alert(initX)
         temp_context.putImageData(cpyCtx, 0, 0);
+
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
 
         temp_context.beginPath();
         temp_context.moveTo(initX, initY);
@@ -1258,11 +1149,11 @@
 
         // add the corresponding (coordinates,thickness,category) to variable that
         // will be passed to python to update the actual python array of traces
-        trace.push(ev._x,ev._y,thick,z);
-                //pushUndo(trace)
+        trace.push(ev._x, ev._y, thick, z,traceType);
+        //pushUndo(trace)
 
         traces.push(trace.toString())
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
 
@@ -1284,64 +1175,515 @@
 
         // add the corresponding (coordinates,thickness,category) to variable that
         // will be passed to python to update the actual python array of traces
-        trace.push(ev._x,ev._y,thick,z);
+        trace.push(ev._x, ev._y, thick, z,traceType);
 
         //pushUndo(trace)
 
         traces.push(trace.toString())
-                // hide Undo button and reactivate it only if traces.length > 0 
-        document.getElementById("btnUndo").style.visibility = "visible";
+        // hide Undo button and reactivate it only if traces.length > 0
+        // document.getElementById("btnUndo").style.visibility = "visible";
 
         img_update();
       }
     };
   }
 
-  function pushUndo(trace){
-    var trace_ = [];
-    for (j = 0; j < trace.length; j++) {
-      trace_[j] = trace[j];
-    }
-    // replace category ID by eraser ID
-    for (j = 3; j < trace_.length; j=j+4) {
-      trace_[j] = 0;
+  // rectangle tool
+  tools.rect = function () {
+    var tool = this;
+    this.started = false;
+    var clicked = false;
+
+    var x, y; // current mouse coordinates
+    var initX, initY; // initial mouse coordinates for this line
+    var traceType = 2;
+
+    document.body.style.cursor = "url('/static/images/rect"+document.getElementById('dsize').value+".png') 0 0, default";
+
+    // the mouse events are trickier for this tool, since we
+    function mouseOut() {
+      tool.started = false;
+      clicked = false;
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      thick = temp_context.lineWidth;
+      var z = document.getElementById('dcolor').value;
+
+      trace.push(x, y, thick, z,traceType);
+      //pushUndo(trace)
+
+      traces.push(trace.toString())
+      // document.getElementById("btnUndo").style.visibility = "visible";
+
+      img_update();
+      document.getElementById("imageTemp").ontouchleave = function () {
+      }
     }
 
-    undoArr.push(trace_)
-    // drop first (oldest) element if more than 5 elements
-    if (undoArr.length > 5)
-      undoArr.shift(); 
+    // This is called when you start holding down the touch.
+    // This starts the pencil drawing.
+    this.touchstart = function (ev) {
+      trace = [];
+      // this prevents the page to scroll while drawing on temp_canvas
+      if (ev.target == temp_canvas) {
+        ev.preventDefault();
+      }
+
+      x = ev._x;
+      y = ev._y;
+
+      tool.started = true;
+
+      temp_context.globalCompositeOperation = "source-over";
+
+      color_choose();
+      size_choose();
+
+      var z = document.getElementById('dcolor').value;
+
+      thick = temp_context.lineWidth;
+
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      trace.push(ev._x, ev._y, thick, z,traceType);
+
+      initX = ev._x;
+      initY = ev._y;
+
+      cpyCtx = temp_context.getImageData(0, 0, temp_context.canvas.width, temp_context.canvas.height);
+
+      // mouse out is triggered when clicked, so we use clicked to double check
+      document.getElementById("imageTemp").onmouseout = function () {
+        if (tool.started && clicked == true) {
+          clicked = false;
+          mouseOut()
+        }
+      };
+
+    };
+
+    this.mousedown = function (ev) {
+      trace = [];
+      cpyCtx = temp_context.getImageData(0, 0, temp_canvas.width, temp_canvas.height);
+
+      clicked = true
+
+      x = ev._x;
+      y = ev._y;
+
+      tool.started = true;
+
+      temp_context.globalCompositeOperation = "source-over";
+
+      color_choose();
+      size_choose();
+
+      var z = document.getElementById('dcolor').value;
+
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      thick = temp_context.lineWidth;
+      trace.push(ev._x, ev._y, thick, z,traceType);
+
+      initX = ev._x;
+      initY = ev._y;
+
+      // mouse out is triggered when clicked, so we use clicked to double check
+      document.getElementById("imageTemp").onmouseout = function () {
+        if (tool.started && clicked == true) {
+          mouseOut()
+          clicked = false;
+        }
+      };
+    };
+
+    this.touchmove = function (ev) {
+
+      if (tool.started) {
+        // this prevents the page to scroll while drawing on temp_canvas
+        if (ev.target == temp_canvas) {
+          ev.preventDefault();
+        }
+
+        x = ev._x;
+        y = ev._y;
+
+        var z = document.getElementById('dcolor').value;
+        temp_context.putImageData(cpyCtx, 0, 0);
+
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
+
+        temp_context.beginPath();
+        temp_context.moveTo(initX, initY);
+
+        temp_context.lineTo(ev._x, ev._y);
+        temp_context.stroke();
+
+        img_update();
+      }
+    };
+
+    this.mousemove = function (ev) {
+      if (tool.started) {
+
+        x = ev._x;
+        y = ev._y;
+
+        var z = document.getElementById('dcolor').value;
+        temp_context.putImageData(cpyCtx, 0, 0);
+
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
+
+        temp_context.beginPath();
+        // temp_context.moveTo(initX, initY);
+        // temp_context.lineTo(ev._x, ev._y);
+        temp_context.rect(initX, initY, ev._x-initX, ev._y-initY);
+        if (thick > 8)
+          temp_context.fill();
+        else
+          temp_context.stroke();
+
+        img_update();
+
+      }
+    };
+
+    // This is called when you release the touch button.
+    this.touchend = function (ev) {
+      if (tool.started) {
+        // this prevents the page to scroll while drawing on temp_canvas
+        if (ev.target == temp_canvas) {
+          ev.preventDefault();
+        }
+
+        var z = document.getElementById('dcolor').value;
+
+        // tool.mousemove(ev);
+        tool.started = false;
+
+        x = ev._x;
+        y = ev._y;
+        thick = temp_context.lineWidth;
+
+        // add the corresponding (coordinates,thickness,category) to variable that
+        // will be passed to python to update the actual python array of traces
+        trace.push(ev._x, ev._y, thick, z,traceType);
+        //pushUndo(trace)
+
+        traces.push(trace.toString())
+        // document.getElementById("btnUndo").style.visibility = "visible";
+
+        img_update();
+
+      }
+    };
+
+    this.mouseup = function (ev) {
+      clicked = false;
+
+      if (tool.started) {
+        // tool.mousemove(ev);
+        tool.started = false;
+
+        var z = document.getElementById('dcolor').value;
+
+        x = ev._x;
+        y = ev._y;
+        thick = temp_context.lineWidth;
+
+        // add the corresponding (coordinates,thickness,category) to variable that
+        // will be passed to python to update the actual python array of traces
+        trace.push(ev._x, ev._y, thick, z,traceType);
+
+        //pushUndo(trace)
+
+        traces.push(trace.toString())
+        // hide Undo button and reactivate it only if traces.length > 0
+        // document.getElementById("btnUndo").style.visibility = "visible";
+
+        img_update();
+      }
+    };
   }
 
- function undoTrace(){
-      // get last trace
-    var trace_ = traces[traces.length-1]; /*THIS IS A STRING*/
-    // get coordinates as integer from string as in example
-    var trace_ = trace_.split(",").map(Number);
+  // filled circle tool
+  tools.circle = function () {
+    var tool = this;
+    this.started = false;
+    var clicked = false;
 
-    // erase from canvas
-    temp_context.strokeStyle = 'white';
-    temp_context.globalCompositeOperation="destination-out";
+    var x,y; // current mouse coordinates
+    var initX,initY; // initial mouse coordinates for this circle
+    var traceType = 1;
+    // change mouse icon to circle tool
+    // document.body.style.cursor = "crosshair";
 
-    temp_context.lineWidth = trace_[2]+1;
+    document.body.style.cursor = "url('/static/images/circle"+document.getElementById('dsize').value+".png') 0 0, default";
 
-    temp_context.beginPath();
-    temp_context.moveTo(trace_[0], trace_[1]);
+    // the mouse events are trickier for this tool, since we
+    function mouseOut() {
+      tool.started = false;
+      clicked = false;
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      thick = temp_context.lineWidth;
+      var z = document.getElementById('dcolor').value;
 
-    for (j = 4; j < trace_.length; j=j+4) {
-      temp_context.lineTo(trace_[j], trace_[j+1]);
-      temp_context.stroke();
+      trace.push(x,y,thick,z,traceType);
+            //pushUndo(trace)
+
+      traces.push(trace.toString())
+      // document.getElementById("btnUndo").style.visibility = "visible";
+
+      img_update();
+      document.getElementById("imageTemp").ontouchleave = function(){}
     }
 
-    // DELETE LAST TRACE FROM TRACES ARRAY
-    traces.splice(-1,1); //remove last item from traces array
+    // This is called when you start holding down the touch.
+    // This starts the pencil drawing.
+    this.touchstart = function (ev) {
+      trace = [];
+      // this prevents the page to scroll while drawing on temp_canvas
+      if (ev.target == temp_canvas) {
+        ev.preventDefault();
+      }
 
-    img_update();           
-    
-    // CHECK LENGTH OF TRACES ARRAY
-    // IF IT IS EMPTY, NO TRACE CAN BE UNDONE
-    if(traces.length == 0){  //empty array?
-      document.getElementById("btnUndo").style.visibility = "hidden";
-    }
+      x = ev._x+30;
+      y = ev._y+30;
 
+      tool.started = true;
+
+      temp_context.globalCompositeOperation="source-over";
+
+      color_choose();
+      size_choose();
+
+      var z = document.getElementById('dcolor').value;
+
+      thick = temp_context.lineWidth;
+
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      trace.push(ev._x+30,ev._y+30,thick,z,traceType);
+
+      initX = ev._x+30;
+      initY = ev._y+30;
+
+      cpyCtx = temp_context.getImageData(0, 0, temp_context.canvas.width, temp_context.canvas.height);
+
+      // mouse out is triggered when clicked, so we use clicked to double check
+      document.getElementById("imageTemp").onmouseout = function(){
+        if (tool.started && clicked == true){
+          clicked = false;
+          mouseOut()
+        }
+      };
+
+    };
+
+    this.mousedown = function (ev) {
+      trace = [];
+      cpyCtx = temp_context.getImageData(0, 0, temp_canvas.width, temp_canvas.height);
+
+      clicked = true
+
+      x = ev._x+30;
+      y = ev._y+30;
+
+      tool.started = true;
+
+      temp_context.globalCompositeOperation="source-over";
+
+      color_choose();
+      size_choose();
+
+      var z = document.getElementById('dcolor').value;
+
+      // add the corresponding (coordinates,thickness,category) to variable that
+      // will be passed to python to update the actual python array of traces
+      thick = temp_context.lineWidth;
+      trace.push(ev._x+30,ev._y+30,thick,z,traceType);
+
+      initX = ev._x+30;
+      initY = ev._y+30;
+
+      // mouse out is triggered when clicked, so we use clicked to double check
+      document.getElementById("imageTemp").onmouseout = function(){
+        if (tool.started && clicked == true){
+          mouseOut()
+          clicked = false;
+        }
+      };
+    };
+
+    this.touchmove = function (ev) {
+
+      if (tool.started) {
+        // this prevents the page to scroll while drawing on temp_canvas
+        if (ev.target == temp_canvas) {
+          ev.preventDefault();
+        }
+
+        x = ev._x+30;
+        y = ev._y+30;
+
+        var z = document.getElementById('dcolor').value;
+        temp_context.putImageData(cpyCtx, 0, 0);
+
+        temp_context.beginPath();
+        var radius = ((x-initX)**2 +(y-initY)**2)**0.5;
+        temp_context.arc(initX, initY, radius, 0, 2 * Math.PI);
+        temp_context.stroke();
+
+        img_update();
+      }
+    };
+
+    this.mousemove = function (ev) {
+      if (tool.started) {
+
+        x = ev._x+30;
+        y = ev._y+30;
+
+        var z = document.getElementById('dcolor').value;
+        temp_context.putImageData(cpyCtx, 0, 0);
+
+        if (z == 0){
+          temp_context.strokeStyle = 'white';
+          temp_context.globalCompositeOperation="destination-out";
+        }
+        else {
+          temp_context.globalCompositeOperation="source-over";
+        }
+
+        temp_context.beginPath();
+        var radius = ((x-initX)**2 +(y-initY)**2)**0.5;
+        temp_context.arc(initX, initY, radius, 0, 2 * Math.PI);
+        // temp_context.stroke();
+        if (thick > 8)
+          temp_context.fill();
+        else
+          temp_context.stroke();
+        img_update();
+
+      }
+    };
+
+    // This is called when you release the touch button.
+    this.touchend = function (ev) {
+      if (tool.started) {
+        // this prevents the page to scroll while drawing on temp_canvas
+        if (ev.target == temp_canvas) {
+          ev.preventDefault();
+        }
+
+        var z = document.getElementById('dcolor').value;
+
+        // tool.mousemove(ev);
+        tool.started = false;
+
+        x = ev._x+30;
+        y = ev._y+30;
+        thick = temp_context.lineWidth;
+
+        // add the corresponding (coordinates,thickness,category) to variable that
+        // will be passed to python to update the actual python array of traces
+        trace.push(ev._x+30,ev._y+30,thick,z,traceType);
+                //pushUndo(trace)
+
+        traces.push(trace.toString())
+        // document.getElementById("btnUndo").style.visibility = "visible";
+
+        img_update();
+
+      }
+    };
+
+    this.mouseup = function (ev) {
+      clicked = false;
+
+      if (tool.started) {
+        // tool.mousemove(ev);
+        tool.started = false;
+
+        var z = document.getElementById('dcolor').value;
+
+        x = ev._x+30;
+        y = ev._y+30;
+        thick = temp_context.lineWidth;
+
+        // add the corresponding (coordinates,thickness,category) to variable that
+        // will be passed to python to update the actual python array of traces
+        trace.push(ev._x+30,ev._y+30,thick,z,traceType);
+
+        //pushUndo(trace)
+
+        traces.push(trace.toString())
+                // hide Undo button and reactivate it only if traces.length > 0
+        // document.getElementById("btnUndo").style.visibility = "visible";
+
+        img_update();
+      }
+    };
   }
+
+ //  function pushUndo(trace){
+ //    var trace_ = [];
+ //    for (j = 0; j < trace.length; j++) {
+ //      trace_[j] = trace[j];
+ //    }
+ //    // replace category ID by eraser ID
+ //    for (j = 3; j < trace_.length; j=j+4) {
+ //      trace_[j] = 0;
+ //    }
+ //
+ //    undoArr.push(trace_)
+ //    // drop first (oldest) element if more than 5 elements
+ //    if (undoArr.length > 5)
+ //      undoArr.shift();
+ //  }
+ //
+ // function undoTrace(){
+ //      // get last trace
+ //    var trace_ = traces[traces.length-1]; /*THIS IS A STRING*/
+ //    // get coordinates as integer from string as in example
+ //    var trace_ = trace_.split(",").map(Number);
+ //
+ //    // erase from canvas
+ //    temp_context.strokeStyle = 'white';
+ //    temp_context.globalCompositeOperation="destination-out";
+ //
+ //    temp_context.lineWidth = trace_[2]+1;
+ //
+ //    temp_context.beginPath();
+ //    temp_context.moveTo(trace_[0], trace_[1]);
+ //
+ //    for (j = 4; j < trace_.length; j=j+4) {
+ //      temp_context.lineTo(trace_[j], trace_[j+1]);
+ //      temp_context.stroke();
+ //    }
+ //
+ //    // DELETE LAST TRACE FROM TRACES ARRAY
+ //    traces.splice(-1,1); //remove last item from traces array
+ //
+ //    img_update();
+ //
+ //    // CHECK LENGTH OF TRACES ARRAY
+ //    // IF IT IS EMPTY, NO TRACE CAN BE UNDONE
+ //    if(traces.length == 0){  //empty array?
+ //      document.getElementById("btnUndo").style.visibility = "hidden";
+ //    }
+ //
+ //  }
