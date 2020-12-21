@@ -2,16 +2,17 @@
 sudo docker build -t freelabel-docker .
 
 # Enter container with support to access webpage through localhost
-sudo docker run --network="host" -it freelabel-docker
-** To use a local folder within the interface, add the flag: -v /your/source/folder/:/folder/in/docker/
+sudo docker run --network="host" -it freelabel-docker python3 manage.py runserver 0.0.0.0:9000
 
-# Navigate to folder containing Freelabel
-cd /opt/freelabel
+** To use a local folder within the interface, add the flag: -v /your/source/folder/:/opt/freelabel/
 
-# Enter virtual environment
-source bin/activate
+sudo docker run -v /your/source/folder/:/opt/freelabel/  --network="host" -it freelabel-docker python3 manage.py runserver 0.0.0.0:9000
 
-# Start server
+OR
+
+sudo docker run -v /your/source/folder/:/opt/freelabel/  --network="host" -it freelabel-docker bash
+
+# Start server if you haven't started it from the docker run.
 python3 manage.py runserver 0.0.0.0:9000
 
 # Open interface in browser
