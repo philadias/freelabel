@@ -22,16 +22,24 @@ RUN echo "Downloading and building Freelabel..." && \
 	git clone --single-branch --branch freelabel_light https://github.com/philadias/freelabel.git .
 
 RUN echo "Create virtual environment..." && \
-	pip3 install --upgrade pip && pip3 install virtualenv && \
-	cd freelabel && virtualenv -p python3 .
+	pip3 install --upgrade pip && pip3 install virtualenv
 
-RUN echo "Configure virtual environment..." && \
-    /bin/bash -c "source ./bin/activate" && \
-	pip3 install -r requirements.txt
+WORKDIR $FREELABEL_ROOT/freelabel
 
-RUN echo "Compile RGR..." && cd freelabel && \
-	python3 setup.py build_ext --inplace
+#RUN virtualenv -p python3 .
 
-WORKDIR /
+#RUN echo "Configure virtual environment..." 
+
+#RUN "source ./bin/activate"
+
+RUN pip3 install -r ../requirements.txt
+
+RUN echo "Compile RGR..."
+
+RUN python3 setup.py build_ext --inplace
+
+WORKDIR $FREELABEL_ROOT
+
 RUN echo "**** FOLLOW INSTRUCTIONS FROM README_Instructions.md TO START INTERFACE (printed below) *****" 
+
 RUN cat /opt/freelabel/docker/README_Instructions.md

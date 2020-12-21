@@ -129,6 +129,7 @@ def loadcustom(request):
     files_ = glob.glob(os.path.join(localFolder,"*.jpg"))
     files_.extend(glob.glob(os.path.join(localFolder,"*.png")))
     files_.extend(glob.glob(os.path.join(localFolder,"*.JPEG")))
+    files_.extend(glob.glob(os.path.join(localFolder,"*.jpeg")))
     imgList = [os.path.basename(x) for x in files_]
 
     # in case of loading pre-segmentation maps
