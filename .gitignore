@@ -2,6 +2,7 @@ freelabel/bin/
 freelabel/build/
 freelabel/include/
 freelabel/local/
+freelabel/lib/
 freelabel/migrations/
 freelabal/__pycache__/
 FreeLabel_api/__pycache__/
