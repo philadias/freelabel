@@ -15,13 +15,15 @@
 
     var folderpath = prompt("Path to your dataset", "./Spacenet/");
     datasetname = prompt("Name of your dataset", "custom");
+    outputfolder = prompt("Path where outputs will be saved. Files will be under path/username/dataset", "./static/log/masks/username/dataset");
 
     // AJAX call to loadlist() in views.py to get list of images, gt, bboxes, categories 
     $.ajax({
       url: 'loadcustom/',
       type: 'POST',
       data: {"folderpath": folderpath,
-             "datasetname":datasetname},
+             "datasetname":datasetname,
+             "outputpath": outputfolder},
       tryCount : 0,
       retryLimit : 3,      
       success: function(resp){
@@ -484,7 +486,8 @@
                  "timeBonus": timeBonus.toFixed(2),
                  "finalScore": img_score,
                  "fileID": fileID,
-                "datasetname":datasetname},
+                 "datasetname":datasetname,
+                 "outputfolder": outputfolder},
           tryCount : 0,
           retryLimit : 3,
           success: function(resp){    

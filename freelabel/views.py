@@ -20,7 +20,8 @@ import json
 import urllib.request as ur
 
 from skimage.draw import line
-from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, tracePolyline, readLocalImg, traceCircle, traceRect
+from ourLib import startRGR, traceLine, cmpToGT, saveGTasImg, saveAnnsAsPNG, \
+                    tracePolyline, readLocalImg, traceCircle, traceRect
 
 from random import shuffle
 
@@ -108,6 +109,7 @@ def loadcustom(request):
     
     localFolder = request.POST.get('folderpath')
     setname = request.POST.get('datasetname')
+    outputFolder = request.POST.get('outputpath')
 
     # # web_dir = '/home/philipe/Pictures/test/'
     # httpd = HTTPServer(localFolder, ("", PORT))
@@ -169,7 +171,9 @@ def loadcustom(request):
         nextId = int(info)
     # to append bar if needed
     localFolder = os.path.join(localFolder,"")
-    return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'cnnList': cnnList,'catList':catList,'idsList': idsList,'username': username,'nextId':nextId,'localFolder':localFolder}), content_type="application/json")
+    return HttpResponse(json.dumps({'PORT':PORT,'imgList': imgList,'cnnList': cnnList,'catList':catList,\
+                                    'idsList': idsList,'username': username,'nextId':nextId,\
+                                    'localFolder':localFolder, 'outputFolder':outputFolder }), content_type="application/json")
 
 # redirecting for compatibility with older versions
 def refine(request):
@@ -253,13 +257,16 @@ def writeCustomLog(request):
     
     setname = request.POST.get('datasetname')
 
-    directory = 'static/log/masks/' + file_ID + '/' + setname  
+    outputfolder = request.POST.get('outputfolder')
+    directory = os.path.join(outputfolder,file_ID,setname)
 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    filename = directory + '/' + os.path.basename(img_file) + '.mat'
-    sio.savemat(filename, mdict={'finalMask': finalMask, 'anns': anns})       
+    filename = directory + '/' + os.path.basename(img_file)
+    sio.savemat(filename+ '.mat', mdict={'finalMask': finalMask, 'anns': anns})
+
+    saveAnnsAsPNG(filename,finalMask)
 
     # compute percentage of how many pixels were annotated by the user
     total_anns = np.count_nonzero(anns)

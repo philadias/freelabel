@@ -235,6 +235,20 @@ def startRGR(username,img,userAnns,cnt,weight_,m,url,mergePreSeg):
     im_color = main(username,img,userAnns,weight_,m,url,mergePreSeg)
     cv.imwrite('static/'+username+'/refined'+str(cnt)+'.png', im_color)
 
+def saveAnnsAsPNG(filename,finalMask):
+    # load PASCAL colormap in CV format
+    lut = np.load('static/images/PASCALlutW.npy')
+
+    # apply colormap
+    _, alpha = cv.threshold(finalMask, 0, 255, cv.THRESH_BINARY)
+
+    finalMask = cv.cvtColor(np.uint8(finalMask), cv.COLOR_GRAY2RGB)
+    im_color = cv.LUT(finalMask, lut)
+
+    im_color = np.dstack((im_color, alpha))
+
+    cv.imwrite(filename + '.png', im_color)
+
 def traceLine(img,r0,c0,r1,c1,catId,thick):
     cv.line(img,(c0,r0),(c1,r1),catId,thick)
 

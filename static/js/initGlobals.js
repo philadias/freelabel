@@ -1,6 +1,7 @@
       var ltScore;
 
       var datasetname = "PASCAL";
+      var outputfolder = "./static/log/"
 
       // flag indicating if dataset has GT for all images or not (default: TRUE)
       var datasetGT = true;
