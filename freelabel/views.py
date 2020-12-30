@@ -111,6 +111,13 @@ def loadcustom(request):
     setname = request.POST.get('datasetname')
     outputFolder = request.POST.get('outputpath')
 
+    username = request.user.username
+
+    outputFolder = os.path.join(outputFolder,username,setname)
+
+    if not os.path.exists(outputFolder):
+        os.makedirs(outputFolder)
+
     # # web_dir = '/home/philipe/Pictures/test/'
     # httpd = HTTPServer(localFolder, ("", PORT))
     # httpd.handle_request()
@@ -121,8 +128,6 @@ def loadcustom(request):
 
     t=Thread(target=setcustomfolder,args=[httpd])
     t.start()
-
-    username = request.user.username
 
     # get list of files in folder of custom dataset
     imgList = []
@@ -260,10 +265,11 @@ def writeCustomLog(request):
     outputfolder = request.POST.get('outputfolder')
     directory = os.path.join(outputfolder,file_ID,setname)
 
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    # if not os.path.exists(directory):
+    #     os.makedirs(directory)
 
-    filename = directory + '/' + os.path.basename(img_file)
+    base_ = os.path.basename(img_file)
+    filename = directory + '/' + os.path.splitext(base_)[0]
     sio.savemat(filename+ '.mat', mdict={'finalMask': finalMask, 'anns': anns})
 
     saveAnnsAsPNG(filename,finalMask)

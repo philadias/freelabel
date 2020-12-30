@@ -31,7 +31,10 @@
 
           var lines = resp.imgList;
           var localfolder_ = resp.localFolder;
+          var outputfolder_ = resp.outputFolder;
           var PORT = resp.PORT;
+
+          document.getElementById("outputPathId").innerHTML = "Output at: " + outputfolder_;
           // var linesGT = resp.gtList;
           // var linesIds = resp.idsList;
           // populate corresponding arrays with info loaded from the .txt files
