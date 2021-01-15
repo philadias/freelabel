@@ -33,7 +33,7 @@ The code may be used according to the license below.  If the results of the code
 - virtualenv, which can be installed through 'pip install virtualenv' (see https://virtualenv.pypa.io/en/latest/installation/)
 
 ## Download, configuration and deploying the interface:
-1. clone repository
+1. clone repository. 
 2. cd freelabel/
 3. create virtual environment: virtualenv . (if you have multiple python versions, run: virtualenv -p python3 .)
 4. enter virtual environment: source ./bin/activate
