@@ -19,7 +19,7 @@ ENV FREELABEL_ROOT=/opt/freelabel
 WORKDIR $FREELABEL_ROOT
 
 RUN echo "Downloading and building Freelabel..." && \
-	git clone --single-branch --branch freelabel_light https://github.com/philadias/freelabel.git .
+	git clone --single-branch --branch master https://github.com/philadias/freelabel.git .
 
 RUN echo "Create virtual environment..." && \
 	pip3 install --upgrade pip && pip3 install virtualenv
