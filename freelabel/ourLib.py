@@ -237,9 +237,18 @@ def startRGR(username,img,userAnns,cnt,weight_,m,url,mergePreSeg):
 
 def saveAnnsAsPNG(filename,finalMask):
     # load PASCAL colormap in CV format
-    lut = np.load('static/images/PASCALlutW.npy')
+    #lut = np.load('static/images/PASCALlutW.npy')
+    lut = np.load('static/images/PASCALlut.npy')
 
-    # apply colormap
+    finalMask0 = finalMask
+    
+    # apply colormap is the background < 0?
+    finalMask0 = cv.cvtColor(np.uint8(finalMask), cv.COLOR_GRAY2RGB)
+    im_color = cv.LUT(finalMask0, lut)
+
+    cv.imwrite(filename + '.png', im_color)
+    
+    # version that uses transparency for the background color.
     _, alpha = cv.threshold(finalMask, 0, 255, cv.THRESH_BINARY)
 
     finalMask = cv.cvtColor(np.uint8(finalMask), cv.COLOR_GRAY2RGB)
@@ -247,7 +256,8 @@ def saveAnnsAsPNG(filename,finalMask):
 
     im_color = np.dstack((im_color, alpha))
 
-    cv.imwrite(filename + '.png', im_color)
+    cv.imwrite(filename + '-transparency.png', im_color)
+
 
 def traceLine(img,r0,c0,r1,c1,catId,thick):
     cv.line(img,(c0,r0),(c1,r1),catId,thick)
