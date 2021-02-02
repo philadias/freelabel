@@ -41,8 +41,9 @@ Comments / concerns / problems: please submit a Github issue or email Philipe Di
 2. `cd freelabel/`
 3. create virtual environment: `virtualenv .` (if you have multiple python versions, run: `virtualenv -p python3 .`)
 4. enter virtual environment: `source ./bin/activate`
-5. install requirements: `pip install -r ../requirements.txt` (if it fails, try upgrading pip: `pip install --upgrade pip`)
+5. install requirements: `pip install -r requirements.txt` (if it fails, try upgrading pip: `pip install --upgrade pip`)
 6. Recompile callRGR: 
+	- `cd freelabel`
 	- `python setup.py build_ext --inplace`
 	- `cd ..`
 	
