@@ -249,7 +249,7 @@ def saveAnnsAsPNG(filename,finalMask):
     cv.imwrite(filename + '.png', im_color)
     
     # version that uses transparency for the background color.
-    _, alpha = cv.threshold(finalMask, 0, 255, cv.THRESH_BINARY)
+    _, alpha = cv.threshold(np.uint8(finalMask), 0, 255, cv.THRESH_BINARY)
 
     finalMask = cv.cvtColor(np.uint8(finalMask), cv.COLOR_GRAY2RGB)
     im_color = cv.LUT(finalMask, lut)
