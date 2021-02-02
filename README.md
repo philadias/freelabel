@@ -43,6 +43,7 @@ Comments / concerns / problems: please submit a Github issue or email Philipe Di
 4. enter virtual environment: `source ./bin/activate`
 5. install requirements: `pip install -r requirements.txt` (if it fails, try upgrading pip: `pip install --upgrade pip`)
 6. Recompile callRGR: 
+	- `cd freelabel`
 	- `python setup.py build_ext --inplace`
 	- `cd ..`
 	
