@@ -34,16 +34,16 @@ Comments / concerns / problems: please submit a Github issue or email Philipe Di
 - python3 and corresponding pip3
 - virtualenv, which can be installed through 'pip install virtualenv' (see https://virtualenv.pypa.io/en/latest/installation/)
 
-*** TODO test, directory may be wrong. ****
-
 ## Download, configuration and deploying the interface:
-1. clone repository. `git clone --branch main https://github.com/philadias/freelabel.git`
-2. `cd freelabel/`
-3. create virtual environment: `virtualenv .` (if you have multiple python versions, run: `virtualenv -p python3 .`)
-4. enter virtual environment: `source ./bin/activate`
+1. clone repository. `git clone --branch main --depth 1 https://github.com/philadias/freelabel.git`
+2. enter the repository directory, `cd freelabel/`.
+3. Create a directory for the python environment and cd, `mkdir python-env`, `cd python-env`.
+4. create virtual environment: `virtualenv .` (if you have multiple python versions, run: `virtualenv -p python3 .`)
+5. enter virtual environment: `source ./bin/activate`. 
+6. Return to the level 0 of the repository structure, `cd ..`. 
 5. install requirements: `pip install -r requirements.txt` (if it fails, try upgrading pip: `pip install --upgrade pip`)
 6. Recompile callRGR: 
-	- `cd freelabel`
+	- `cd freelabel` (so the path is `freelabel\freelabel`)
 	- `python setup.py build_ext --inplace`
 	- `cd ..`
 	
@@ -63,9 +63,9 @@ Comments / concerns / problems: please submit a Github issue or email Philipe Di
 
 First, set up your dataset.  The format is that there is a directory of image files with any of the extensions `.jpg`,  `.png`, `.JPG`, or `jpeg`. 
 
-There is also a text file names `categories.txt` with the categories to be annotated.  The maximum number of categories is 20, plus the background category. 
+There is also a text file named `categories.txt` with the categories to be annotated.  The maximum number of categories is 20, plus the background category. 
 
-There is a demo dataset in this repository called `DogDataset`.  Here, the contents are:
+There is a demo dataset in this repository called `DogDataset`.  Here, the contents of `categories.txt` are:
 
 ```
 Background
@@ -73,7 +73,7 @@ Dog
 Ball
 ```
 
-To add to this list of file types, edit `views.py`, where there are lines like, 
+To add to this list of file types, edit `views.py`, where there are lines such as, 
 
 ```python
 files_ = glob.glob(os.path.join(localFolder,"*.jpg"))
