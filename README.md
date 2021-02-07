@@ -47,7 +47,7 @@ Comments / concerns / problems: please submit a Github issue or email Philipe Di
 	- `python setup.py build_ext --inplace`
 	- `cd ..`
 	
-7. run Django project: `python manage.py runserver 0.0.0.0:9000`
+7. run Django project: `python manage.py runserver localhost:9000`
 
 ---
 
