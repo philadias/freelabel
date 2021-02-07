@@ -19,6 +19,7 @@ from django.contrib import admin
 
  
 urlpatterns = [ 
+    path('',include('freelabel.urls')),
     path('freelabel/',include('freelabel.urls')),
     path('admin/', admin.site.urls),
 ]
