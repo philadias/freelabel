@@ -1,6 +1,6 @@
 FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces
 
-#Overview:
+# Overview:
 - [Paper](#underlying-ideas-the-paper)
 - [Disclaimer](#disclaimer)
 - [License](#license)
