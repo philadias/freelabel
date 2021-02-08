@@ -23,9 +23,6 @@ WORKDIR $FREELABEL_ROOT
 RUN echo "Downloading and building Freelabel..." && \
 	git clone --single-branch --branch main --depth 1 https://github.com/philadias/freelabel.git .
 
-#RUN echo "Create virtual environment..." && \
-#	pip3 install --upgrade pip && pip3 install virtualenv
-
 RUN echo "Create virtual environment..." && pip3 install virtualenv
 
 WORKDIR $FREELABEL_ROOT/freelabel
@@ -51,4 +48,4 @@ USER freelabel-user
 
 RUN echo "**** FOLLOW INSTRUCTIONS FROM README-docker.md TO START INTERFACE (printed below) *****" 
 
-RUN cat /usr/bin/docker/README-docker.md
+RUN cat README-docker.md

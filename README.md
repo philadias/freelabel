@@ -1,5 +1,21 @@
 FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces
 
+#Overview:
+- [Paper](#underlying-ideas-the-paper)
+- [Disclaimer](#disclaimer)
+- [License](#license)
+- [Notes](#notes-on-code-organization)
+- [Requirements](#requirements)
+- [Getting started](#getting-started)
+   - [Installation](#installation)
+   - [Accessing the annotation tool](#accessing-the-annotation-tool)    
+- [Annotating a dataset](#annotating-the-demo-dataset-or-your-dataset)
+   - [Input](#input)
+   - [Output](#output)
+   - [Convert from annotated format to classes](#convert-from-annotated-format-to-classes)
+   - [Annotating your own dataset](#annotating-your-own-dataset)
+- [Docker version](#docker-version) 
+
 ## Underlying ideas: the paper
 This README file is to accompany code for pixel-level image annotation, lead by Philipe Dias to his paper: FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces published in [WACV 2019](https://ieeexplore.ieee.org/document/8659167):
 
@@ -22,19 +38,24 @@ This paper is also available from arXiv:1902.06806 [cs.CV] [here](https://arxiv.
 ## Citing the code
 The code may be used according to the license below.  If the results of the code are used as a part of a system described in a publication, we request that the authors cite the published paper at a minimum. 
 
-### Disclaimer: this project is the first experience of the involved students with Javascript and Django. Despite our efforts to keep it fairly organized and functional, there is significant room for improvement. We appreciate any feedback for improving the tool, but cannot provide any type of support/warranty.
+### Disclaimer
+**This project is the first experience of the involved students with Javascript and Django. Despite our efforts to keep it fairly organized and functional, there is significant room for improvement. We appreciate any feedback for improving the tool, but cannot provide any type of support/warranty.**
 
 Comments / concerns / problems: please submit a Github issue or email Philipe Dias at **TODO** .
 
-### Available under the Non-Profit Open Software License: for more details https://opensource.org/licenses/NPOSL-3.0.
+### License
+Available under the Non-Profit Open Software License: for more details https://opensource.org/licenses/NPOSL-3.0.
 
-## Notes on code organization: check Notes_on_FreeLabel.pdf
+## Notes on code organization 
+check Notes_on_FreeLabel.pdf
 
-## Requirements:
+## Requirements
 - python3 and corresponding pip3
 - virtualenv, which can be installed through 'pip install virtualenv' (see https://virtualenv.pypa.io/en/latest/installation/)
 
-## Download, configuration and deploying the interface:
+# Getting started 
+
+## Installation
 1. clone repository. `git clone --branch main --depth 1 https://github.com/philadias/freelabel.git`
 2. enter the repository directory, `cd freelabel/`.
 3. Create a directory for the python environment and cd, `mkdir python-env`, `cd python-env`.
@@ -49,15 +70,13 @@ Comments / concerns / problems: please submit a Github issue or email Philipe Di
 	
 7. run Django project: `python manage.py runserver localhost:9000`
 
----
-
-## Accessing the interface:
+## Accessing the annotation tool
 1. access [http://localhost:9000/freelabel/](http://localhost:9000/freelabel/)
 2. register user/password (no need for email)
 2. login with registered user
 3. Done!
 
-## Annotating the demo dataset or your dataset.
+# Annotating the demo dataset or your dataset.
 
 ### Setup.
 
@@ -122,7 +141,7 @@ For example, the first 21 classes have the following colors, from top to bottom:
 
 ![look up table colors](static/readme-tutorial/lut-section.png)
 
-#### Convert from annotated format to classes
+### Convert from annotated format to classes
 
 An annotated image with 2 PASCAL VOC classes, plus background.
 
@@ -207,3 +226,35 @@ Here is the result from this annotation, saved with the same filename as the ori
 A similar image, with transparency set as the background, will also be saved.  The filename has `-transparency.png` as the suffix, and it otherwise the same as the original image filename.
 
 ![annotated dog image](static/readme-tutorial/Epwn2pnW8AADv6Q-transparency.png)
+
+# Docker version
+
+We provide a Dockerfile to capture the installation requirements for the project.  Some care is needed when using it -- the docker image needs to be mounted from the cloned freelabel repository on your local disk.  Please read for details. 
+
+## Setup
+
+The first two steps are the same as the typical setup.
+
+1. clone repository. `git clone --branch main --depth 1 https://github.com/philadias/freelabel.git`
+2. enter the repository directory, `cd freelabel/`.
+3. `sudo docker build -t freelabel-docker . `
+
+Then, the dataset to be annotated must reside in the current directory `freelabel`, or at a level below `freelabel` because of the way the volume will be mounted.  The demo dataset, `./DogDataset` satisfies this requirement.
+
+## Run
+
+Run the docker image, 
+
+```bash 
+sudo docker run -v $PWD:/usr/bin/freelabel/  --network="host" -it freelabel-docker python3 manage.py runserver localhost:9000 
+```
+
+and open the annotation tool at [http://localhost:9000/freelabel](http://localhost:9000/freelabel) in a web browser.  Register and login like described in [Annotating your own dataset](#annotating-your-own-dataset). Note that:
+- the bind mount `-v $PWD:/usr/bin/freelabel/` is very specific in this case and must be copied exactly, 
+- the source dataset must be a subdirectory of the cloned freelabel directory.
+- and the output directory, where the annotations are stored, but also be a subdirectory of the cloned freelabel directory. 
+
+
+
+
+
