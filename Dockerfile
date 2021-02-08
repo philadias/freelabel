@@ -17,11 +17,11 @@ RUN echo "Installing dependencies..." && \
 	python3-setuptools \
 	libopencv-dev
 
-ENV FREELABEL_ROOT=/opt/freelabel
+ENV FREELABEL_ROOT=/usr/bin/freelabel
 WORKDIR $FREELABEL_ROOT
 
 RUN echo "Downloading and building Freelabel..." && \
-	git clone --single-branch --branch main https://github.com/philadias/freelabel.git .
+	git clone --single-branch --branch main --depth 1 https://github.com/philadias/freelabel.git .
 
 #RUN echo "Create virtual environment..." && \
 #	pip3 install --upgrade pip && pip3 install virtualenv
@@ -44,14 +44,11 @@ RUN python3 setup.py build_ext --inplace
 
 WORKDIR $FREELABEL_ROOT
 
-RUN echo "**** FOLLOW INSTRUCTIONS FROM README_Instructions.md TO START INTERFACE (printed below) *****" 
+RUN useradd --create-home --home-dir $HOME freelabel-user \
+	&& chown -R freelabel-user:freelabel-user $HOME
 
+USER freelabel-user
 
+RUN echo "**** FOLLOW INSTRUCTIONS FROM README-docker.md TO START INTERFACE (printed below) *****" 
 
-
-#RUN cat /opt/freelabel/docker/README_Instructions.md
-
-#CMD ["/opt/freelabel/manage.py runserver 0.0.0.0:9000"]
-
-#ENTRYPOINT ["python3"]
-#CMD ["python3", "manage.py runserver 0.0.0.0:9000"]
+RUN cat /usr/bin/docker/README-docker.md

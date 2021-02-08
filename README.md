@@ -43,7 +43,7 @@ Comments / concerns / problems: please submit a Github issue or email Philipe Di
 6. Return to the level 0 of the repository structure, `cd ..`. 
 5. install requirements: `pip install -r requirements.txt` (if it fails, try upgrading pip: `pip install --upgrade pip`)
 6. Recompile callRGR: 
-	- `cd freelabel` (so the path is `freelabel\freelabel`)
+	- `cd freelabel` (so the path is `freelabel/freelabel`)
 	- `python setup.py build_ext --inplace`
 	- `cd ..`
 	
