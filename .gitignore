@@ -11,7 +11,7 @@ static/atabb-dec/
 Amys-notes.txt
 static/log
 static/atabb/
-static/lists/
+static/lists/*atabb*
 python-env/
 freelabel/callRGR.cpython-36m-x86_64-linux-gnu.so
 .bash_history
