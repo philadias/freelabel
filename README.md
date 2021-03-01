@@ -41,7 +41,7 @@ The code may be used according to the license below.  If the results of the code
 ### Disclaimer
 **This project is the first experience of the involved students with Javascript and Django. Despite our efforts to keep it fairly organized and functional, there is significant room for improvement. We appreciate any feedback for improving the tool, but cannot provide any type of support/warranty.**
 
-Comments / concerns / problems: please submit a Github issue or email Philipe Dias at **TODO** .
+Comments / concerns / problems: please submit a Github issue (preferred method) or email the team at freelabelcontact@gmail.com.
 
 ### License
 Available under the Non-Profit Open Software License: for more details https://opensource.org/licenses/NPOSL-3.0.
