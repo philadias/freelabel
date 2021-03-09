@@ -14,7 +14,7 @@ FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces
    - [Output](#output)
    - [Convert from annotated format to classes](#convert-from-annotated-format-to-classes)
    - [Annotating your own dataset](#annotating-your-own-dataset)
-- [Docker version](#docker-version) 
+- [Docker version (WIP)](#docker-version-wip) 
 
 ## Underlying ideas: the paper
 This README file is to accompany code for pixel-level image annotation, lead by Philipe Dias to his paper: FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces published in [WACV 2019](https://ieeexplore.ieee.org/document/8659167):
@@ -227,7 +227,9 @@ A similar image, with transparency set as the background, will also be saved.  T
 
 ![annotated dog image](static/readme-tutorial/Epwn2pnW8AADv6Q-transparency.png)
 
-# Docker version
+# Docker version (WIP)
+
+*We have been working on a Docker version, but it is not quite operational.*
 
 We provide a Dockerfile to capture the installation requirements for the project.  Some care is needed when using it -- the docker image needs to be mounted from the cloned freelabel repository on your local disk.  Please read for details. 
 
