@@ -48,7 +48,7 @@ opencv-contrib-python == 3.4.3.18
 # rango/growScribble.py: 8
 # rango/ourLib.py: 6
 # test_api.py: 3
-opencv-python == 3.4.3.18
+opencv-python == 4.2.0.32
 
 # populate_rango.py: 7
 # rango/admin.py: 6
