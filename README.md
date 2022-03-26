@@ -1,3 +1,6 @@
+# Update of dependencies + debugging/testing currently ongoing. I hope to have things back up and running by March 27th, 2022
+
+-------
 FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces
 
 # Overview:
