@@ -41,7 +41,8 @@
           // var linesIds = resp.idsList;
           // populate corresponding arrays with info loaded from the .txt files
           for (var j = 0, len = lines.length; j < len; j++) {
-            imgArray[j] = "http://0.0.0.0:"+PORT+"/"+lines[j];
+            imgArray[j] = "http://localhost:"+PORT+"/"+lines[j];
+            alert(imgArray[j]);
             localPathArray[j] = localfolder_+lines[j];            
           }
 

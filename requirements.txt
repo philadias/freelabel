@@ -2,7 +2,7 @@
 # https://github.com/damnever/pigar
 
 # rango/setup.py: 8
-Cython == 0.28.3
+Cython
 
 # cv_api/urls.py: 16,17
 # cv_api/wsgi.py: 12
@@ -28,7 +28,7 @@ Cython == 0.28.3
 Django == 2.2.27
 
 # rango/driveapi.py: 8
-PyDrive == 1.3.1
+PyDrive
 
 # firstRank.py: 1
 # rango/firstRank.py: 1
@@ -38,35 +38,35 @@ PyDrive == 1.3.1
 # rango/views.py: 19
 # rango/viewsFl.py: 10
 # rango/viewsTrain.py: 10
-numpy == 1.21.0
+numpy
 
 # rango/growScribble.py: 8
 # rango/ourLib.py: 6
 # test_api.py: 3
-opencv-contrib-python == 4.2.0.32
+opencv-contrib-python
 
 # rango/growScribble.py: 8
 # rango/ourLib.py: 6
 # test_api.py: 3
-opencv-python == 4.2.0.32
+opencv-python
 
 # populate_rango.py: 7
 # rango/admin.py: 6
 # rango/forms.py: 4
 # rango/urls.py: 3
 # rango/views.py: 15,17
-rango == 0.0.2a
+rango
 
 # test_api.py: 2
-requests == 2.20.0
+requests
 
 # rango/views.py: 23
-scikit_image == 0.17.2
+scikit_image
 
 # rango/growScribble.py: 11
 # rango/ourLib.py: 9
 # rango/views.py: 28
 # rango/viewsFl.py: 16
 # rango/viewsTrain.py: 16
-scipy == 1.1.0
+scipy
 pandas
