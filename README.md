@@ -1,4 +1,7 @@
-# Update of dependencies + debugging/testing currently ongoing. I hope to have things back up and running by March 27th, 2022
+## Latest update: March 26th, 2022.
+- Flexible requirements.txt
+- Tested using **Python 3.8** (compilation of .c files using Cython has thrown errors for Python 3.10)
+- Replaced 0.0.0.0 by localhost for mapping local files, as for the first time I've noticed that Windows/WSL can have issues mapping to 0.0.0.0
 
 -------
 FreeLabel: A Publicly Available Annotation Tool based on Freehand Traces
