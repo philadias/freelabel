@@ -4,9 +4,14 @@ freelabel/include/
 freelabel/local/
 freelabel/lib/
 freelabel/migrations/
-freelabal/__pycache__/
+freelabel/__pycache__/
 FreeLabel_api/__pycache__/
 freelabel/share/
 static/atabb-dec/
 Amys-notes.txt
-static/log/masks/atabb-dec/
+static/log
+static/atabb/
+static/lists/*atabb*
+python-env/
+freelabel/callRGR.cpython-36m-x86_64-linux-gnu.so
+.bash_history

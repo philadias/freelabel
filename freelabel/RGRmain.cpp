@@ -202,7 +202,6 @@ void runSNIC(
     int pixelcount = 0;
     int xx(0),yy(0),ii(0);
     double ldiff(0),adiff(0),bdiff(0),xdiff(0),ydiff(0),colordist(0),xydist(0),slicdist(0);    
-    int k; int cl;
 
     //-------------
     // Run main loop
@@ -270,35 +269,7 @@ void runSNIC(
         }
     }
     *outnumk = numk;
-    // fclose(f);
 
-    //---------------------------------------------
-    // Label the rarely occuring unlabelled pixels
-    //---------------------------------------------
-    // int cnt = 0;
-    // // if(labels[0] < 0) labels[0] = 1;
-    // for(int y = 0; y < height; y++)
-    // {
-    //     for(int x = 0; x < width; x++)
-    //     {
-    //         int i = y*width+x;
-    //         if(labels[i] < 0)//find an adjacent label
-    //         {
-    //             cnt++;
-    //             labels[i] = numk+1;
-    //             // if(labels[i-1] >= 1) 
-    //             // {
-    //             //     labels[i] = labels[i-1];
-    //             //     kclass[i] = kclass[i-1];
-    //             // }
-    //             // else if(labels[i-width] >= 1) 
-    //             // {
-    //             //     kclass[i] = kclass[i-width];
-    //             // }
-    //         }//if labels[i] < 0 ends
-    //     }
-    // }
-    // mexPrintf("%d",cnt);    
 }
 
 // Parameters: R, G, B, preSeg, S(centroids), width, height, no. of centroids, m
@@ -327,13 +298,7 @@ extern "C" void RGRmain(int* rin, int* gin, int* bin, int* kclass, int* roi, int
     {
         for(int y = 0; y < height; y++)
         {
-            int i = y*width+x;
-            // rin[i] = imgbytes[ii];
-            // gin[i] = imgbytes[ii+sz];
-            // bin[i] = imgbytes[ii+sz+sz];
-
-            // kclass[i] = prebytes[ii];
-            int roi_ = roi[ii];                    
+            int roi_ = roi[ii];
 
             if(roi_ > 0)
             {
@@ -378,5 +343,4 @@ extern "C" void RGRmain(int* rin, int* gin, int* bin, int* kclass, int* roi, int
     free(bvec);
     free(klabels);
 
-    // return outlabels;
 }

@@ -13,10 +13,12 @@
     // initialize mouse cursor as pencil by default
     document.body.style.cursor = "url('/static/images/pencil"+document.getElementById('dsize').value+".png') 0 0, default";    
 
-    var folderpath = prompt("Path to your dataset", "./Spacenet/");
-    datasetname = prompt("Name of your dataset", "custom");
-    outputfolder = prompt("Path where outputs will be saved. Files will be under path/username/dataset", "./static/log/masks/username/dataset");
-
+    var folderpath = prompt("Path of the dataset to be annotated", "./");
+    datasetname = prompt("This annotation session's name", "custom");
+    // new
+    //outputfolder = prompt("Path where outputs will be saved. Files will be under path/username/dataset", "./static/log/masks/username/dataset");
+    outputfolder = prompt("Path where outputs will be saved. Files will be under the {path-entered}/username/annotation-name", "");
+  
     // AJAX call to loadlist() in views.py to get list of images, gt, bboxes, categories 
     $.ajax({
       url: 'loadcustom/',
@@ -39,7 +41,7 @@
           // var linesIds = resp.idsList;
           // populate corresponding arrays with info loaded from the .txt files
           for (var j = 0, len = lines.length; j < len; j++) {
-            imgArray[j] = "http://0.0.0.0:"+PORT+"/"+lines[j];
+            imgArray[j] = "http://localhost:"+PORT+"/"+lines[j];
             localPathArray[j] = localfolder_+lines[j];            
           }
 
@@ -523,6 +525,7 @@
   }
 
   function createAgainList(){
+      
       // remove rest elements from current array
       for (var ii = 0; ii < catArray.length; ii++)
       {
@@ -575,7 +578,8 @@
         var textNode = document.createTextNode(catArray[k]);
         text_.appendChild(textNode);
         document.getElementById('svgOne').appendChild(text_);
-      }                
+      }       
+    document.getElementById("dcolor").value = 1;         
   }
 
   function getColor(color_select){
